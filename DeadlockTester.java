@@ -3,21 +3,21 @@ import java.util.List;
 public class DeadlockTester {
 
     /**
-     * Checks that the current thread that is trying to access GroundVehicle
+     * Checks that the current thread that is trying to access Runner
      * 'gv' method does not hold a different lock except the built-in lock of
      * 'gv'
      * 
      * @param gv
-     *            groundVehicle that is calling this method
+     *            Runner that is calling this method
      * @param s
-     *            simulator in which this GroundVehicle is added.
+     *            simulator in which this Runner is added.
      * @return true if it doesn't hold any lock (different from built-in lock of
      *         'gv')
      * @throws DeadLockTesterException
      */
 
-    public static boolean testLock(GroundVehicle gv, Simulator s) throws DeadlockTesterException {
-	List<GroundVehicle> gvList = s.groundVehicleList;
+    public static boolean testLock(Runner gv, Simulator s) throws DeadlockTesterException {
+	List<Runner> gvList = s.RunnerList;
 	for (int i = 0; i < gvList.size(); i++) {
 	    if (Thread.holdsLock(gvList.get(i))) {
 		System.out.printf("Holds Lock to %d\n", i);
@@ -41,20 +41,20 @@ public class DeadlockTester {
      * leaders lock. Else the order to get the locks will be reversed.
      */
 
-    // public static void lockgvLocks(List<GroundVehicle> gvList, int ID) {
-    // 	List<GroundVehicle> orderedList = sortVehiclesById(gvList);
+    // public static void lockgvLocks(List<Runner> gvList, int ID) {
+    // 	List<Runner> orderedList = sortVehiclesById(gvList);
     // 	for (int i = 0; i < orderedList.size(); i++) {	    
     // 	    orderedList.get(i).getVehicleLock().lock();
     // 	}
     // }
 
     // /**
-    //  * @return an arrayList<GroundVehicle> with the same GroundVehicles of
-    //  *         gvList but ordered by the 'Id' variable of GroundVehicle. (From
+    //  * @return an arrayList<Runner> with the same Runners of
+    //  *         gvList but ordered by the 'Id' variable of Runner. (From
     //  *         lowest to highest).
     //  */
-    // public static List<GroundVehicle> sortVehiclesById(List<GroundVehicle> gvList) {
-    // 	GroundVehicle key;
+    // public static List<Runner> sortVehiclesById(List<Runner> gvList) {
+    // 	Runner key;
     // 	int i, j;
     // 	for (j = 0 + 1; j <= gvList.size() - 1; j++) {
     // 	    key = gvList.get(j);
@@ -67,12 +67,12 @@ public class DeadlockTester {
     // }
 
     // /**
-    //  * @return an arrayList<GroundVehicle> with the same GroundVehicles of
-    //  *         gvList but ordered by the 'Id' variable of GroundVehicle. (From
+    //  * @return an arrayList<Runner> with the same Runners of
+    //  *         gvList but ordered by the 'Id' variable of Runner. (From
     //  *         lowest to highest).
     //  */
-    // public static List<GroundVehicle> reverseSortVehiclesById(List<GroundVehicle> gvList) {
-    // 	GroundVehicle key;
+    // public static List<Runner> reverseSortVehiclesById(List<Runner> gvList) {
+    // 	Runner key;
     // 	int i, j;
     // 	for (j = 0 + 1; j <= gvList.size() - 1; j++) {
     // 	    key = gvList.get(j);
@@ -85,11 +85,11 @@ public class DeadlockTester {
     // }
 
     // /**
-    //  * Unlocks all the 'mygvLocks' lock of each GroundVehicle object in the
+    //  * Unlocks all the 'mygvLocks' lock of each Runner object in the
     //  * gvList.
     //  */
-    // public static void unlockgvLocks(List<GroundVehicle> gvList, int ID) {
-    // 	List<GroundVehicle> orderedList = reverseSortVehiclesById(gvList);
+    // public static void unlockgvLocks(List<Runner> gvList, int ID) {
+    // 	List<Runner> orderedList = reverseSortVehiclesById(gvList);
     // 	for (int i = 0; i < orderedList.size(); i++) {
     // 	    orderedList.get(i).getVehicleLock().unlock();
     // 	}
