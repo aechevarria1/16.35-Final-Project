@@ -3,9 +3,9 @@ import java.lang.IllegalArgumentException;
 
 public class FollowingController extends VehicleController
 {
-    private Runner leadergv;
+    private GroundVehicle leadergv;
     
-    public FollowingController(Simulator s,  Runner followingVehicle, Runner targetVehicle)
+    public FollowingController(Simulator s,  GroundVehicle followingVehicle, GroundVehicle targetVehicle)
 	throws IllegalArgumentException
     {	
 	super(s,followingVehicle);

@@ -5,7 +5,7 @@ public class RandomController extends VehicleController
 {
     private Random rng;
 
-    public RandomController(Simulator s, Runner v){
+    public RandomController(Simulator s, GroundVehicle v){
 	super(s,v);	
 	rng = new Random();
     }

@@ -5,15 +5,15 @@ public class Simulator extends Thread
     private int _currentSec = 0;
     private int _currentMSec = 0;
 
-    //List of Runner
-    protected List<Runner> RunnerList;
+    //List of GroundVehicle
+    protected List<GroundVehicle> groundVehicleList;
     public int numControlToUpdate = 0;
     public int numVehicleToUpdate = 0;
 
     private DisplayClient _displayClient;
 
     public Simulator(){
-	RunnerList = new ArrayList<Runner>();	
+	groundVehicleList = new ArrayList<GroundVehicle>();	
     }
 
     public Simulator(DisplayClient displayClient){
@@ -42,11 +42,11 @@ public class Simulator extends Thread
 	}
     }
 
-    public synchronized void addRunner(Runner gv){
-	RunnerList.add(gv);
+    public synchronized void addGroundVehicle(GroundVehicle gv){
+	groundVehicleList.add(gv);
 	System.out.printf("---------Adding Ground Vehicle-----------\n");
-	for(int i=0;i < RunnerList.size(); i++){
-	    Runner mgv = RunnerList.get(i);
+	for(int i=0;i < groundVehicleList.size(); i++){
+	    GroundVehicle mgv = groundVehicleList.get(i);
 	    double position[] = mgv.getPosition();
 	    System.out.printf("%d : %f,%f,%f \n", mgv.getVehicleID(),
 			      position[0], position[1], position[2]);
@@ -68,9 +68,9 @@ public class Simulator extends Thread
 	int _lastUpdateMSec = _currentMSec;
 
 	_displayClient.clear();
-	double gvX[] = new double[RunnerList.size()];
-	double gvY[] = new double[RunnerList.size()];
-	double gvTheta[] = new double[RunnerList.size()];
+	double gvX[] = new double[groundVehicleList.size()];
+	double gvY[] = new double[groundVehicleList.size()];
+	double gvTheta[] = new double[groundVehicleList.size()];
 	_displayClient.traceOn();
 
 	while (_currentSec < 100) {
@@ -84,15 +84,15 @@ public class Simulator extends Thread
 	    }
 
 	    // Update display
-	    for(int i=0;i < RunnerList.size(); i++){
-		Runner currVehicle = RunnerList.get(i);
+	    for(int i=0;i < groundVehicleList.size(); i++){
+		GroundVehicle currVehicle = groundVehicleList.get(i);
 		double [] position = currVehicle.getPosition();	
 		double [] velocity = currVehicle.getVelocity();	
 		gvX[i] = position[0];
 		gvY[i] = position[1];
 		gvTheta[i] = position[2];
 	    }
-	    _displayClient.update(RunnerList.size(),gvX,gvY,gvTheta);
+	    _displayClient.update(groundVehicleList.size(),gvX,gvY,gvTheta);
 
 	    // Advance the clock
 	    _lastUpdateSec = _currentSec;
@@ -127,8 +127,8 @@ public class Simulator extends Thread
 		// System.out.printf("Sim [%d,%d] all updated\n", _currentSec, _currentMSec);
 		// // DEBUG
 
-		numControlToUpdate = RunnerList.size();
-		numVehicleToUpdate = RunnerList.size();
+		numControlToUpdate = groundVehicleList.size();
+		numVehicleToUpdate = groundVehicleList.size();
 
 		// // DEBUG
 		// System.out.printf("Sim [%d,%d] resetting sizes, controllers: %d, vehicles: %d\n",
@@ -161,7 +161,7 @@ public class Simulator extends Thread
 
 	Random r = new Random();
 
-	Runner leader = null;
+	GroundVehicle leader = null;
 
 	int leaderType = 1; // 0 - RandomController, 1 - LeadingController
 
@@ -172,8 +172,8 @@ public class Simulator extends Thread
 				    r.nextDouble() * 2 * Math.PI - Math.PI };
 	    double initialS = r.nextDouble() * 5.0 + 5;
 	    double initialOmega = r.nextDouble() * Math.PI / 2.0 - Math.PI / 4.0;
-	    double vel[] = {0,0,0};
-	    Runner gvf = new Runner(initialPos, vel,false,0);
+
+	    GroundVehicle gvf = new GroundVehicle(initialPos, initialS, initialOmega);
 	    VehicleController c = null;
 
 	    if (i == 0) {
@@ -195,7 +195,7 @@ public class Simulator extends Thread
 		    System.exit(-1);
 		}
 	    }
-	    sim.addRunner(gvf);
+	    sim.addGroundVehicle(gvf);
 	    gvf.addSimulator(sim);
 	    c.start();
 	    gvf.start();
