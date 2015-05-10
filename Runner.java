@@ -28,7 +28,9 @@ public class Runner extends Thread
     private int TeamID;
     private int LegID;
     private boolean Won;
-    public Runner (double pose[], double vel[], boolean hasBaton, int LegID, int TeamID)
+    
+    
+    public Runner (double pose[], double vel[], boolean hasBaton, double approachTime)
     {
 	if (pose.length != 3)
 	    throw new IllegalArgumentException("newPos must be of length 3");
@@ -47,8 +49,9 @@ public class Runner extends Thread
 	_dtheta = vel[2];
     this.approachTime = approachTime;
     this.hasBaton = hasBaton;
-	clampPosition();
-	clampVelocity();
+	//position have velocity constraints have changed, don't clamp back to the old values
+    //clampPosition();
+	//clampVelocity();
 
 	r = new Random();
     }
@@ -156,7 +159,7 @@ public class Runner extends Thread
 	_y = newPos[1];
 	_theta = newPos[2];
 
-	clampPosition();
+	//clampPosition();
     }
 
     public synchronized void setVelocity(double[] newVel) {
@@ -167,7 +170,7 @@ public class Runner extends Thread
 	_dy = newVel[1];
 	_dtheta = newVel[2];		
 
-	clampVelocity();
+	//clampVelocity();
     }
 
     public synchronized void controlRunner(Control c) {
@@ -175,7 +178,7 @@ public class Runner extends Thread
 	_dy = c.getSpeed() * Math.sin(_theta);
 	_dtheta = c.getRotVel();
 
-	clampVelocity();
+	//clampVelocity();
     }
 
     public void run()
@@ -321,8 +324,8 @@ public class Runner extends Thread
 	    _y = _y + _dy * t;
 	}
 
-	clampPosition();
-	clampVelocity();
+	//clampPosition();
+	//clampVelocity();
     }
     //Our added methods
     public boolean getHasBaton(){

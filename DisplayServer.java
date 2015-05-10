@@ -186,8 +186,9 @@ public class DisplayServer extends JPanel implements KeyListener {
 
     setOpaque(true);   
     setFocusable(true);
-    setMinimumSize(new Dimension(500,500));
-    setPreferredSize(new Dimension(500,500));
+    //changed the first value of both of these to make display longer
+    setMinimumSize(new Dimension(1200,500));
+    setPreferredSize(new Dimension(1200,500));
     addKeyListener(this);
     container.add(this,BorderLayout.WEST);
     setVisible(true);
