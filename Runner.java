@@ -6,7 +6,7 @@ import java.util.Random;
 
 public class Runner extends Thread
 {
-    private double x, y, theta,speed,approachTime;
+    private double x, y, theta,approachTime;
     private double dx,dy,dtheta;
     private int teamID,legID;
     private boolean hasBaton,won;
@@ -24,7 +24,7 @@ public class Runner extends Thread
     // for deadlock prevention
     // private ReentrantLock mygvLock;
 
-    public Runner (double pose[], double s, boolean hasBaton,int TID, int LID, double omega)
+    public Runner (double pose[], double s, boolean hasBaton,int TID, int LID)
     {
 	if (pose.length != 3)
 	    throw new IllegalArgumentException("newPos must be of length 3");
@@ -40,7 +40,7 @@ public class Runner extends Thread
 
 	dx = s * Math.cos(theta);
 	dy = s * Math.sin(theta);
-	dtheta = omega;
+	dtheta = 0;
     
 	clampPosition();
 	clampVelocity();
@@ -99,7 +99,7 @@ public class Runner extends Thread
 	    dy = 5.0 * dy/velMagnitude;
 	}
 
-	dtheta = Math.min(Math.max(dtheta, -Math.PI/4), Math.PI/4);		
+	//dtheta = Math.min(Math.max(dtheta, -Math.PI/4), Math.PI/4);		
     }
 
     private boolean checkIfNoLock() {
@@ -168,7 +168,7 @@ public class Runner extends Thread
     public synchronized void controlRunner(Control c) {
 	dx = c.getSpeed() * Math.cos(theta);
 	dy = c.getSpeed() * Math.sin(theta);
-	dtheta = c.getRotVel();
+	theta = c.getAngle();
 
 	clampVelocity();
     }
@@ -240,7 +240,7 @@ public class Runner extends Thread
 	return rtheta - Math.PI;
     }
 
-    public synchronized void advance(int sec, int msec)
+   /* public synchronized void advance(int sec, int msec)
     {
 	double t = sec + msec * 1e-3;
 
@@ -261,7 +261,7 @@ public class Runner extends Thread
 
 	setPosition(newPose);
 	setVelocity(newVel);
-    }    
+    }    */
    
     public synchronized void advanceNoiseFree(int sec, int msec)
     {
@@ -289,7 +289,7 @@ public class Runner extends Thread
 	// Assuming that dx, dy, and dtheta was set beforehand by controlVehicle()
 	double s = Math.sqrt( dx * dx + dy * dy );
 
-	if (Math.abs(dtheta) > 1e-3) { // The following model is not well defined when dtheta = 0
+	/*if (Math.abs(dtheta) > 1e-3) { // The following model is not well defined when dtheta = 0
 	    // Circle center and radius
 	    double r = s/dtheta;
 
@@ -310,7 +310,7 @@ public class Runner extends Thread
 	    dx = s * Math.cos(theta);
 	    dy = s * Math.sin(theta);
 
-	} else {			// Straight motion. No change in theta.
+	} else*/ {			// Straight motion. No change in theta.
 	    x = x + dx * t;
 	    y = y + dy * t;
 	}
@@ -319,24 +319,21 @@ public class Runner extends Thread
 	clampVelocity();
     }
 
-    // The following three methods (getVehicleLock, compareId,
-    // reverseCompareId) is is needed when you try resource-hierarchy
-    // solution for deadlock prevention
-
-    // public ReentrantLock getVehicleLock() {
-    // 	return this.mygvLock;
-    // }
-
-    // public int compareId(Runner gv) {
-    // 	if (getVehicleID() < gv.getVehicleID())
-    // 	    return -1;
-    // 	else if (getVehicleID() > getVehicleID())
-    // 	    return 1;
-    // 	else
-    // 	    return 0;
-    // }
-
-    // public int reverseCompareId(Runner gv) {
-    // 	return -compareId(gv);
-    // }    
+    public boolean getHasBaton(){
+    	return hasBaton;
+    }
+    
+    public boolean getWon(){
+    	return won;
+    }
+    
+    public void setWon(boolean w){
+    	won = w;
+    }
+    
+    public double getApproachTime(){
+    	return approachTime;
+    }
+    
+    
 }

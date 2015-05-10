@@ -160,20 +160,22 @@ public class Simulator extends Thread
 	Simulator sim = new Simulator(dpClient);
 
 	Random r = new Random();
-
-	Runner leader = null;
-
-	int leaderType = 1; // 0 - RandomController, 1 - LeadingController
-
-	RunnerController fc = null; // First controller	
-	
-	for (int i = 0; i < numberofVehicles; i++) {
+	double[] pos = {0,50,0};
+	Runner run = new Runner(pos,5,false,0,0);
+	//int leaderType = 1; // 0 - RandomController, 1 - LeadingController
+	RunnerController fc = new RunnerController(sim,run); // First controller	
+	sim.addRunner(run);
+	run.addSimulator(sim);
+	sim.start();
+	fc.start();
+	run.start();
+	/*for (int i = 0; i < numberofVehicles; i++) {
 	    double[] initialPos = { r.nextDouble() * 100, r.nextDouble() * 100,
 				    r.nextDouble() * 2 * Math.PI - Math.PI };
 	    double initialS = r.nextDouble() * 5.0 + 5;
 	    double initialOmega = r.nextDouble() * Math.PI / 2.0 - Math.PI / 4.0;
 
-	    Runner gvf = new Runner(initialPos, initialS,false,0,0, initialOmega);
+	    Runner gvf = new Runner(initialPos, initialS,false,0,0);
 	    RunnerController c = null;
 
 	    if (i == 0) {
@@ -199,7 +201,6 @@ public class Simulator extends Thread
 	    gvf.addSimulator(sim);
 	    c.start();
 	    gvf.start();
-	}
-	sim.start();
+	}*/
     }
 }

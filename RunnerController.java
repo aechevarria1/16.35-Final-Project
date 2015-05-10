@@ -3,8 +3,8 @@ import java.lang.IllegalArgumentException;
 
 public class RunnerController extends Thread
 {
-    private Simulator _s;
-    protected Runner _v;
+    private Simulator s;
+    protected Runner v;
     
     private int _lastCheckedTime = 0;
     private int _lastCheckedMTime = 0;
@@ -40,8 +40,8 @@ public class RunnerController extends Thread
 	if (v == null) {
 	    throw new IllegalArgumentException("No vehicle specified.");
 	}
-	_s = s;
-	_v = v;
+	this.s = s;
+	this.v = v;
 
 	synchronized (RunnerController.class) {
 	    controllerID = totalNumControllers;
@@ -56,18 +56,18 @@ public class RunnerController extends Thread
 	
 	while(currentTime < 100.0) {
 
-	    synchronized(_s) {
-		currentTime = _s.getCurrentSec();
-		currentMTime = _s.getCurrentMSec();
+	    synchronized(s) {
+		currentTime = s.getCurrentSec();
+		currentMTime = s.getCurrentMSec();
 
 		while (_lastCheckedTime == currentTime && _lastCheckedMTime == currentMTime) {
 		    try {
 			// // DEBUG
 			// System.out.printf("VC %d [%d,%d] waiting\n", controllerID, currentTime, currentMTime);
 			// // DEBUG
-			_s.wait(); // Wait for the simulator to notify
-			currentTime = _s.getCurrentSec();
-			currentMTime = _s.getCurrentMSec();
+			s.wait(); // Wait for the simulator to notify
+			currentTime = s.getCurrentSec();
+			currentMTime = s.getCurrentMSec();
 		    } catch (java.lang.InterruptedException e) {
 			System.err.printf("Interrupted " + e);
 			System.exit(0);
@@ -76,7 +76,7 @@ public class RunnerController extends Thread
 		// // DEBUG
 		// System.out.printf("VC %d [%d,%d] proceeding\n", controllerID, currentTime, currentMTime);
 		// // DEBUG
-		_s.notifyAll();
+		s.notifyAll();
 	    }
 
 	    // // DEBUG
@@ -87,7 +87,7 @@ public class RunnerController extends Thread
 	    Control nextControl = this.getControl(currentTime, currentMTime);
 
 	    if (nextControl != null) {
-		_v.controlRunner(nextControl); 
+		v.controlRunner(nextControl); 
 		// // DEBUG
 		// System.out.printf("VC %d [%d,%d] next control applied\n", controllerID, currentTime, currentMTime);
 		// // DEBUG
@@ -97,8 +97,8 @@ public class RunnerController extends Thread
 	    _lastCheckedTime = currentTime;
 	    _lastCheckedMTime = currentMTime;
 
-	    synchronized(_s){
-		if(_s.numControlToUpdate == 0 ) {
+	    synchronized(s){
+		if(s.numControlToUpdate == 0 ) {
 		    //this should not already be zero - something is wrong
 		    System.err.println("ERROR: No of controllers to update already 0.\n");
 		    System.exit(-1);
@@ -106,8 +106,8 @@ public class RunnerController extends Thread
 		// // DEBUG
 		// System.out.printf("VC %d [%d,%d] decrementing numControlToUpdate\n", controllerID, currentTime, currentMTime);
 		// // DEBUG
-		_s.numControlToUpdate--;
-		_s.notifyAll();
+		s.numControlToUpdate--;
+		s.notifyAll();
 	    }
 	}
     }
@@ -165,10 +165,11 @@ public class RunnerController extends Thread
     public Control getControl(int sec, int msec)
     {
 	double controlTime = sec+msec*1E-3;
-		
+	double x = v.getPosition()[0];
+	double y = v.getPosition()[1];
 	Control nextControl = null;
 
-	if (!controllerInitialized) 
+	/*if (!controllerInitialized) 
 	    initializeController();
 
 	if (isTurning) {
@@ -187,8 +188,23 @@ public class RunnerController extends Thread
 		timeOfManoeuverStart = controlTime;
 		nextControl = new Control(minTransSpeed, maxRotSpeed);
 	    } 
+	}*/
+	//Testing to make sure the runner can change direction properly. Every quadrant it will switcb
+	if (x<=20){
+		nextControl= new Control(5,0);
 	}
-
+	else if (x>20 && x<=40){
+		nextControl= new Control(5,Math.PI/4);
+	}
+	else if (x>40 && x<=60){
+		nextControl= new Control(5,0);
+	}
+	else if (x>60 && x<=80){
+		nextControl= new Control(5,-Math.PI/4);
+	}
+	else {
+		nextControl = new Control(5,0);
+	}
 	return nextControl;
     }
 
