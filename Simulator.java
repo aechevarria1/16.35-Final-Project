@@ -2,15 +2,15 @@ import java.util.*;
 
 public class Simulator extends Thread
 {
-    private int _currentSec = 0;
-    private int _currentMSec = 0;
+    private int curentSec = 0;
+    private int curentMSec = 0;
 
     //List of Runner
     protected List<Runner> RunnerList;
     public int numControlToUpdate = 0;
     public int numVehicleToUpdate = 0;
 
-    private DisplayClient _displayClient;
+    private DisplayClient displayClient;
 
     public Simulator(){
 	RunnerList = new ArrayList<Runner>();	
@@ -22,23 +22,23 @@ public class Simulator extends Thread
 	if(displayClient ==null){
 	    throw new IllegalArgumentException("Invalid Display client object");
 	}
-	_displayClient = displayClient;
+	this.displayClient = displayClient;
     }
 
 
     public int getCurrentSec() {
-	return _currentSec;
+	return curentSec;
     }
 	
     public int getCurrentMSec() {
-	return _currentMSec;
+	return curentMSec;
     }
 
     public void advanceClock() {
-	_currentMSec += 10;
-	if (_currentMSec >= 1e3) {
-	    _currentMSec -= 1e3;
-	    _currentSec ++;
+	curentMSec += 10;
+	if (curentMSec >= 1e3) {
+	    curentMSec -= 1e3;
+	    curentSec ++;
 	}
     }
 
@@ -64,19 +64,19 @@ public class Simulator extends Thread
 	// real-time implementation in a later assignment, we're actually going to
 	// need to measure the elapsed time. 
 
-	int _lastUpdateSec = _currentSec;
-	int _lastUpdateMSec = _currentMSec;
+	int _lastUpdateSec = curentSec;
+	int _lastUpdateMSec = curentMSec;
 
-	_displayClient.clear();
+	displayClient.clear();
 	double gvX[] = new double[RunnerList.size()];
 	double gvY[] = new double[RunnerList.size()];
 	double gvTheta[] = new double[RunnerList.size()];
-	_displayClient.traceOn();
+	displayClient.traceOn();
 
-	while (_currentSec < 100) {
+	while (curentSec < 100) {
 	    
-	    int deltaSec = _currentSec - _lastUpdateSec;
-	    int deltaMSec = _currentMSec - _lastUpdateMSec;
+	    int deltaSec = curentSec - _lastUpdateSec;
+	    int deltaMSec = curentMSec - _lastUpdateMSec;
 
 	    if (deltaMSec < 0) {
 		deltaMSec += 1e3;
@@ -92,15 +92,15 @@ public class Simulator extends Thread
 		gvY[i] = position[1];
 		gvTheta[i] = position[2];
 	    }
-	    _displayClient.update(RunnerList.size(),gvX,gvY,gvTheta);
+	    displayClient.update(RunnerList.size(),gvX,gvY,gvTheta);
 
 	    // Advance the clock
-	    _lastUpdateSec = _currentSec;
-	    _lastUpdateMSec = _currentMSec;
+	    _lastUpdateSec = curentSec;
+	    _lastUpdateMSec = curentMSec;
 	    synchronized(this) {
 		// // DEBUG
 		// System.out.printf("Sim [%d,%d] clock advancing, controllers: %d, vehicles : %d\n",
-		// 		  _currentSec, _currentMSec, 
+		// 		  curentSec, curentMSec, 
 		// 		  numControlToUpdate, numVehicleToUpdate);
 		// System.out.printf("--------------------------------------------\n");
 		// // DEBUG
@@ -115,7 +115,7 @@ public class Simulator extends Thread
 			wait();
 			// // DEBUG
 			// System.out.printf("Sim [%d,%d] waiting for updating, controllers: %d, vehicles:%d\n",
-			// 		  _currentSec, _currentMSec,
+			// 		  curentSec, curentMSec,
 			// 		  numControlToUpdate, numVehicleToUpdate);
 			// // DEBUG
 		    }
@@ -124,7 +124,7 @@ public class Simulator extends Thread
 		}
 
 		// // DEBUG
-		// System.out.printf("Sim [%d,%d] all updated\n", _currentSec, _currentMSec);
+		// System.out.printf("Sim [%d,%d] all updated\n", curentSec, curentMSec);
 		// // DEBUG
 
 		numControlToUpdate = RunnerList.size();
@@ -132,7 +132,7 @@ public class Simulator extends Thread
 
 		// // DEBUG
 		// System.out.printf("Sim [%d,%d] resetting sizes, controllers: %d, vehicles: %d\n",
-		// 		  _currentSec, _currentMSec,
+		// 		  curentSec, curentMSec,
 		// 		  numControlToUpdate, numVehicleToUpdate);
 		// // DEBUG
 		
@@ -140,7 +140,7 @@ public class Simulator extends Thread
 	    }
 
 	}
-	_displayClient.traceOff();
+	displayClient.traceOff();
     }
 
     public static void main (String [] args) throws InterruptedException
@@ -165,16 +165,16 @@ public class Simulator extends Thread
 
 	int leaderType = 1; // 0 - RandomController, 1 - LeadingController
 
-	VehicleController fc = null; // First controller	
+	RunnerController fc = null; // First controller	
 	
 	for (int i = 0; i < numberofVehicles; i++) {
 	    double[] initialPos = { r.nextDouble() * 100, r.nextDouble() * 100,
 				    r.nextDouble() * 2 * Math.PI - Math.PI };
 	    double initialS = r.nextDouble() * 5.0 + 5;
 	    double initialOmega = r.nextDouble() * Math.PI / 2.0 - Math.PI / 4.0;
-	    double vel[] = {0,0,0};
-	    Runner gvf = new Runner(initialPos, vel,false,0);
-	    VehicleController c = null;
+
+	    Runner gvf = new Runner(initialPos, initialS,false,0,0, initialOmega);
+	    RunnerController c = null;
 
 	    if (i == 0) {
 		if (leaderType == 0 ) {

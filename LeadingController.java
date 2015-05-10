@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class LeadingController extends VehicleController {
+public class LeadingController extends RunnerController {
 
     private ArrayList<Runner> gvList;
 

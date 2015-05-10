@@ -1,13 +1,15 @@
 import java.lang.IllegalArgumentException;
+//import static org.junit.Assert.*;
 import java.lang.Object;
 import java.util.Random;
 // import java.util.concurrent.locks.ReentrantLock;
 
 public class Runner extends Thread
 {
-    private double _x, _y, _theta;
-    private double _dx, _dy, _dtheta;
-
+    private double x, y, theta,speed,approachTime;
+    private double dx,dy,dtheta;
+    private int teamID,legID;
+    private boolean hasBaton,won;
     private static int totalNumVehicles = 0;
     private int vehicleID;
 
@@ -22,13 +24,7 @@ public class Runner extends Thread
     // for deadlock prevention
     // private ReentrantLock mygvLock;
 
-    //Our specific variables
-    private boolean hasBaton;
-    private double approachTime;
-    private int TeamID;
-    private int LegID;
-    private boolean Won;
-    public Runner (double pose[], double vel[], boolean hasBaton, int LegID, int TeamID)
+    public Runner (double pose[], double s, boolean hasBaton,int TID, int LID, double omega)
     {
 	if (pose.length != 3)
 	    throw new IllegalArgumentException("newPos must be of length 3");
@@ -38,15 +34,14 @@ public class Runner extends Thread
 	    totalNumVehicles++;
 	}
 
-	_x = pose[0]; 
-	_y = pose[1]; 
-	_theta = pose[2];
+	x = pose[0]; 
+	y = pose[1]; 
+	theta = pose[2];
 
-	_dx = vel[0];
-	_dy = vel[1];
-	_dtheta = vel[2];
-    this.approachTime = approachTime;
-    this.hasBaton = hasBaton;
+	dx = s * Math.cos(theta);
+	dy = s * Math.sin(theta);
+	dtheta = omega;
+    
 	clampPosition();
 	clampVelocity();
 
@@ -64,28 +59,28 @@ public class Runner extends Thread
     }
 
     private void clampPosition() {
-	_x = Math.min(Math.max(_x,0),100);
-	_y = Math.min(Math.max(_y,0),100);
-	_theta = Math.min(Math.max(_theta, -Math.PI), Math.PI);
-	if (_theta - Math.PI == 0 || Math.abs(_theta - Math.PI) < 1e-6)
-	    _theta = -Math.PI;
+	x = Math.min(Math.max(x,0),100);
+	y = Math.min(Math.max(y,0),100);
+	theta = Math.min(Math.max(theta, -Math.PI), Math.PI);
+	if (theta - Math.PI == 0 || Math.abs(theta - Math.PI) < 1e-6)
+	    theta = -Math.PI;
     }
 
     private void clampVelocity() {
 
-	double velMagnitude = Math.sqrt(_dx*_dx+_dy*_dy);
+	double velMagnitude = Math.sqrt(dx*dx+dy*dy);
 	if (velMagnitude > 10.0) {
 	    /* Note: 
 	 
 	       I could also implement this as 
 
-	       double direction = atan2(_dy, _dx);
-	       _dx = 10.0 * cos(direction);
-	       _dy = 10.0 * sin(direction);
+	       double direction = atan2(dy, dx);
+	       dx = 10.0 * cos(direction);
+	       dy = 10.0 * sin(direction);
 
 	       but since 
-	       cos(direction) = _dx/velMagnitude;
-	       sin(direction) = _dy/velMagnitude; 
+	       cos(direction) = dx/velMagnitude;
+	       sin(direction) = dy/velMagnitude; 
 	 
 	       I can save myself an atan2, a cos and a sin, in exchange for two
 	       extra divisions. atan2, cos and sin are very expensive
@@ -93,18 +88,18 @@ public class Runner extends Thread
 
 	    */ 
 
-	    _dx = 10.0 * _dx/velMagnitude;
-	    _dy = 10.0 * _dy/velMagnitude;
+	    dx = 10.0 * dx/velMagnitude;
+	    dy = 10.0 * dy/velMagnitude;
 	}
 
 	if (velMagnitude < 5.0) {
 	    /* Same logic as above. */ 
 
-	    _dx = 5.0 * _dx/velMagnitude;
-	    _dy = 5.0 * _dy/velMagnitude;
+	    dx = 5.0 * dx/velMagnitude;
+	    dy = 5.0 * dy/velMagnitude;
 	}
 
-	_dtheta = Math.min(Math.max(_dtheta, -Math.PI/4), Math.PI/4);		
+	dtheta = Math.min(Math.max(dtheta, -Math.PI/4), Math.PI/4);		
     }
 
     private boolean checkIfNoLock() {
@@ -124,9 +119,9 @@ public class Runner extends Thread
 	double[] position = new double[3];
 	if (checkIfNoLock()) {
 	    synchronized(this) {
-		position[0] = _x;
-		position[1] = _y;
-		position[2] = _theta;
+		position[0] = x;
+		position[1] = y;
+		position[2] = theta;
     
 		return position;
 	    }
@@ -138,9 +133,9 @@ public class Runner extends Thread
 	double[] velocity = new double[3];
 	if (checkIfNoLock()) {
 	    synchronized(this) {
-		velocity[0] = _dx;
-		velocity[1] = _dy;
-		velocity[2] = _dtheta;
+		velocity[0] = dx;
+		velocity[1] = dy;
+		velocity[2] = dtheta;
 		
 		return velocity;
 	    }
@@ -152,9 +147,9 @@ public class Runner extends Thread
 	if (newPos.length != 3)
 	    throw new IllegalArgumentException("newPos must be of length 3");      
 
-	_x = newPos[0];
-	_y = newPos[1];
-	_theta = newPos[2];
+	x = newPos[0];
+	y = newPos[1];
+	theta = newPos[2];
 
 	clampPosition();
     }
@@ -163,17 +158,17 @@ public class Runner extends Thread
 	if (newVel.length != 3)
 	    throw new IllegalArgumentException("newVel must be of length 3");      
 
-	_dx = newVel[0];
-	_dy = newVel[1];
-	_dtheta = newVel[2];		
+	dx = newVel[0];
+	dy = newVel[1];
+	dtheta = newVel[2];		
 
 	clampVelocity();
     }
 
     public synchronized void controlRunner(Control c) {
-	_dx = c.getSpeed() * Math.cos(_theta);
-	_dy = c.getSpeed() * Math.sin(_theta);
-	_dtheta = c.getRotVel();
+	dx = c.getSpeed() * Math.cos(theta);
+	dy = c.getSpeed() * Math.sin(theta);
+	dtheta = c.getRotVel();
 
 	clampVelocity();
     }
@@ -244,7 +239,6 @@ public class Runner extends Thread
 	}
 	return rtheta - Math.PI;
     }
-   
 
     public synchronized void advance(int sec, int msec)
     {
@@ -254,16 +248,16 @@ public class Runner extends Thread
 	double errc = Math.sqrt(0.2) * r.nextGaussian();
 	double errd = Math.sqrt(0.1) * r.nextGaussian();
 
-	newPose[0] = _x + _dx * t + errd * Math.cos(_theta) - errc * Math.sin(_theta);
-	newPose[1] = _y + _dy * t + errd * Math.sin(_theta) + errc * Math.cos(_theta);
-	newPose[2] = _theta + _dtheta * t;
+	newPose[0] = x + dx * t + errd * Math.cos(theta) - errc * Math.sin(theta);
+	newPose[1] = y + dy * t + errd * Math.sin(theta) + errc * Math.cos(theta);
+	newPose[2] = theta + dtheta * t;
 	newPose[2] = normalizeAngle(newPose[2]);
 
 	double[] newVel = new double[3];
-	double s = Math.sqrt(Math.pow(_dx, 2) + Math.pow(_dy, 2));
-	newVel[0] = s * Math.cos(_theta);
-	newVel[1] = s * Math.sin(_theta);
-	newVel[2] = _dtheta;
+	double s = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+	newVel[0] = s * Math.cos(theta);
+	newVel[1] = s * Math.sin(theta);
+	newVel[2] = dtheta;
 
 	setPosition(newPose);
 	setVelocity(newVel);
@@ -274,84 +268,57 @@ public class Runner extends Thread
 	double t = sec + msec * 1e-3;
 
 	// // Linear approximation model
-	// _x = _x + _dx*t;
-	// _y = _y + _dy*t;
-	// _theta = (_theta + _dtheta*t);
+	// x = x + dx*t;
+	// y = y + dy*t;
+	// theta = (theta + dtheta*t);
 
-	// if (_theta < -Math.PI)
-	//   _theta += 2*Math.PI;
-	// if (_theta >= Math.PI)
-	//   _theta -= 2*Math.PI;
+	// if (theta < -Math.PI)
+	//   theta += 2*Math.PI;
+	// if (theta >= Math.PI)
+	//   theta -= 2*Math.PI;
 
-	// // If _dtheta is non-zero, we just turned and so we need to update our
-	// // velocity vector. We could keep _dtheta.
+	// // If dtheta is non-zero, we just turned and so we need to update our
+	// // velocity vector. We could keep dtheta.
 	  
-	// double s = Math.sqrt((_dx)*(_dx) +(_dy)*(_dy));
-	// _dx = s*Math.cos(_theta);
-	// _dy = s*Math.sin(_theta);
-	// _dtheta = _dtheta;
+	// double s = Math.sqrt((dx)*(dx) +(dy)*(dy));
+	// dx = s*Math.cos(theta);
+	// dy = s*Math.sin(theta);
+	// dtheta = dtheta;
     
 	// Curve model
-	// Assuming that _dx, _dy, and _dtheta was set beforehand by controlVehicle()
-	double s = Math.sqrt( _dx * _dx + _dy * _dy );
+	// Assuming that dx, dy, and dtheta was set beforehand by controlVehicle()
+	double s = Math.sqrt( dx * dx + dy * dy );
 
-	if (Math.abs(_dtheta) > 1e-3) { // The following model is not well defined when _dtheta = 0
+	if (Math.abs(dtheta) > 1e-3) { // The following model is not well defined when dtheta = 0
 	    // Circle center and radius
-	    double r = s/_dtheta;
+	    double r = s/dtheta;
 
-	    double xc = _x - r * Math.sin(_theta);
-	    double yc = _y + r * Math.cos(_theta);
+	    double xc = x - r * Math.sin(theta);
+	    double yc = y + r * Math.cos(theta);
 
-	    _theta = _theta + _dtheta * t;
+	    theta = theta + dtheta * t;
 
-	    double rtheta = ((_theta - Math.PI) % (2 * Math.PI));
+	    double rtheta = ((theta - Math.PI) % (2 * Math.PI));
 	    if (rtheta < 0) {	// Note that % in java is remainder, not modulo.
 		rtheta += 2*Math.PI;
 	    }
-	    _theta = rtheta - Math.PI;
+	    theta = rtheta - Math.PI;
 
 	    // Update    
-	    _x = xc + r * Math.sin(_theta);
-	    _y = yc - r * Math.cos(_theta);
-	    _dx = s * Math.cos(_theta);
-	    _dy = s * Math.sin(_theta);
+	    x = xc + r * Math.sin(theta);
+	    y = yc - r * Math.cos(theta);
+	    dx = s * Math.cos(theta);
+	    dy = s * Math.sin(theta);
 
 	} else {			// Straight motion. No change in theta.
-	    _x = _x + _dx * t;
-	    _y = _y + _dy * t;
+	    x = x + dx * t;
+	    y = y + dy * t;
 	}
 
 	clampPosition();
 	clampVelocity();
     }
-    //Our added methods
-    public boolean getHasBaton(){
-    	return hasBaton;
-    }
 
-    public void setBaton(boolean b){
-    	hasBaton = b;
-    }
-    
-    public double getApproachTime(){
-    	return approachTime;
-    }
-    
-    public void setTeamID(int id){
-    	TeamID = id;
-    }
-    
-    public void setLegID(int id){
-    	LegID = id;
-    }
-    
-    public boolean getWon(){
-    	return Won;
-    }
-    
-    public void setWon(boolean w){
-    	Won = w;
-    }
     // The following three methods (getVehicleLock, compareId,
     // reverseCompareId) is is needed when you try resource-hierarchy
     // solution for deadlock prevention

@@ -1,7 +1,7 @@
 import java.util.*;
 import java.lang.IllegalArgumentException;
 
-public class FollowingController extends VehicleController
+public class FollowingController extends RunnerController
 {
     private Runner leadergv;
     

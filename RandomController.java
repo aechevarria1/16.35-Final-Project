@@ -1,7 +1,7 @@
 import java.util.*;
 import java.lang.IllegalArgumentException;
 
-public class RandomController extends VehicleController
+public class RandomController extends RunnerController
 {
     private Random rng;
 
