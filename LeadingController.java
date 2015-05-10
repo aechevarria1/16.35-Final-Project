@@ -2,29 +2,29 @@ import java.util.ArrayList;
 
 public class LeadingController extends VehicleController {
 
-    private ArrayList<GroundVehicle> gvList;
+    private ArrayList<Runner> gvList;
 
-    public LeadingController(Simulator s, GroundVehicle v) {
+    public LeadingController(Simulator s, Runner v) {
 	super(s, v);
-	gvList = new ArrayList<GroundVehicle>();
+	gvList = new ArrayList<Runner>();
     }
 
     /**
-     * Adds a GroundVehicle to the list of chasers considered by this
-     * groundVehicle.
+     * Adds a Runner to the list of chasers considered by this
+     * Runner.
      * 
      * @param v
      */
-    public void addFollower(GroundVehicle v) {
+    public void addFollower(Runner v) {
 	gvList.add(v);
     }
 
     /**
      * Returns a control negating the output for the FollowingControler. Added
-     * special controls when the GroundVehicle is close to the walls.
+     * special controls when the Runner is close to the walls.
      */
     public Control getControl(int sec, int msec) {
-	GroundVehicle closestVehicle = this.getClosestVehicle();
+	Runner closestVehicle = this.getClosestVehicle();
 
 	//if no closest vehicle return null
 	if(closestVehicle == null)
@@ -41,7 +41,7 @@ public class LeadingController extends VehicleController {
 	/*Attempt to get more than one lock - uncomment below to see exception thrown*/
 
 	/*
-	GroundVehicle leadVehicle = _v;
+	Runner leadVehicle = _v;
 	System.out.printf("---Attempted---\n");
 	synchronized(closestVehicle){
 	    synchronized(leadVehicle){//should throw exception 
@@ -80,14 +80,14 @@ public class LeadingController extends VehicleController {
     }
 
     /**
-     * @return the closest GroundVehicle to the leader
+     * @return the closest Runner to the leader
      */
-    public GroundVehicle getClosestVehicle() {
+    public Runner getClosestVehicle() {
 
 	double[] leaderPosition = _v.getPosition();
 	double closestDistance = Double.MAX_VALUE;
-	GroundVehicle closestVehicle = null;
-	for (GroundVehicle v : gvList) {
+	Runner closestVehicle = null;
+	for (Runner v : gvList) {
 	    double[] followerPosition = v.getPosition();
 	    double xDistance = leaderPosition[0] - followerPosition[0];
 	    double yDistance = leaderPosition[1] - followerPosition[1];

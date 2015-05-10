@@ -4,7 +4,7 @@ import java.lang.IllegalArgumentException;
 public class VehicleController extends Thread
 {
     private Simulator _s;
-    protected GroundVehicle _v;
+    protected Runner _v;
     
     private int _lastCheckedTime = 0;
     private int _lastCheckedMTime = 0;
@@ -32,7 +32,7 @@ public class VehicleController extends Thread
 
     private static double avoidWallDist = 15;
     
-    public VehicleController(Simulator s, GroundVehicle v) throws IllegalArgumentException
+    public VehicleController(Simulator s, Runner v) throws IllegalArgumentException
     {
 	if (s == null) {
 	    throw new IllegalArgumentException("No simulator specified.");
@@ -87,7 +87,7 @@ public class VehicleController extends Thread
 	    Control nextControl = this.getControl(currentTime, currentMTime);
 
 	    if (nextControl != null) {
-		_v.controlVehicle(nextControl); 
+		_v.controlRunner(nextControl); 
 		// // DEBUG
 		// System.out.printf("VC %d [%d,%d] next control applied\n", controllerID, currentTime, currentMTime);
 		// // DEBUG
