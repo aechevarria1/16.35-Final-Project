@@ -28,7 +28,7 @@ public class Runner extends Thread
     private int TeamID;
     private int LegID;
     private boolean Won;
-    public Runner (double pose[], double vel[], boolean hasBaton, int LegID, int TeamID)
+    public Runner (double pose[], double vel[], boolean hasBaton, double approachTime)
     {
 	if (pose.length != 3)
 	    throw new IllegalArgumentException("newPos must be of length 3");
