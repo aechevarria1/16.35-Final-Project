@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class LeadingController extends VehicleController {
+public class LeadingController extends RunnerController {
 
     private ArrayList<Runner> gvList;
 
@@ -36,7 +36,7 @@ public class LeadingController extends VehicleController {
 
 	chaserPos = closestVehicle.getPosition(); /* Shared Resource */
 
-	myPos = _v.getPosition(); /* Shared Resource */
+	myPos = v.getPosition(); /* Shared Resource */
 
 	/*Attempt to get more than one lock - uncomment below to see exception thrown*/
 
@@ -84,7 +84,7 @@ public class LeadingController extends VehicleController {
      */
     public Runner getClosestVehicle() {
 
-	double[] leaderPosition = _v.getPosition();
+	double[] leaderPosition = v.getPosition();
 	double closestDistance = Double.MAX_VALUE;
 	Runner closestVehicle = null;
 	for (Runner v : gvList) {

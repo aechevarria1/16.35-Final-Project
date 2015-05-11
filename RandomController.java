@@ -1,7 +1,7 @@
 import java.util.*;
 import java.lang.IllegalArgumentException;
 
-public class RandomController extends VehicleController
+public class RandomController extends RunnerController
 {
     private Random rng;
 
@@ -13,10 +13,10 @@ public class RandomController extends VehicleController
     public Control getControl(int sec, int msec) {
 	// DEBUG
 	System.out.printf("VC %d [%d,%d] get random control, vehicle: %d\n",
-			  controllerID, sec, msec, _v.getVehicleID());
+			  controllerID, sec, msec, v.getVehicleID());
 	// DEBUG
 	// avoid walls if we're too close
-	Control a = avoidWalls(this._v.getPosition());
+	Control a = avoidWalls(this.v.getPosition());
 	if (a != null)
 	    return a;
 		
