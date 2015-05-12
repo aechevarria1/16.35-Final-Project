@@ -6,7 +6,7 @@ public class Simulator extends Thread
     private int curentMSec = 0;
 
     //List of Runner
-    protected List<Runner> RunnerList;
+    public List<Runner> RunnerList; //Changed from private to public
     public int numControlToUpdate = 0;
     public int numVehicleToUpdate = 0;
 
@@ -152,55 +152,94 @@ public class Simulator extends Thread
 	    System.exit(-1);
 	}
 	
-	int numberofVehicles = Integer.parseInt(args[0]);
-	String host = args[1];
+	int numberofVehicles = 1;
+	String host = args[0];
 
 	DisplayClient dpClient = new DisplayClient(host);
 
 	Simulator sim = new Simulator(dpClient);
 
-	Random r = new Random();
-	double[] pos = {0,50,0};
-	Runner run = new Runner(pos,5,false,0,0);
-	//int leaderType = 1; // 0 - RandomController, 1 - LeadingController
-	RunnerController fc = new RunnerController(sim,run); // First controller	
-	sim.addRunner(run);
-	run.addSimulator(sim);
-	sim.start();
-	fc.start();
-	run.start();
-	/*for (int i = 0; i < numberofVehicles; i++) {
-	    double[] initialPos = { r.nextDouble() * 100, r.nextDouble() * 100,
-				    r.nextDouble() * 2 * Math.PI - Math.PI };
-	    double initialS = r.nextDouble() * 5.0 + 5;
-	    double initialOmega = r.nextDouble() * Math.PI / 2.0 - Math.PI / 4.0;
 
-	    Runner gvf = new Runner(initialPos, initialS,false,0,0);
-	    RunnerController c = null;
+	double team1y = 50;
+	double team2y = 60;
+	double runner1x = 10;
+	double runner2x = 60;
+	double runner3x = 110;
+	double runner4x = 160;
+    
+   	double[] initialPos11 = {runner1x,team1y, 0};
+	Runner runner11 = new Runner(initialPos11, 0, false, 0, 0);
+	RunnerController c11 = new FirstRunnerController(sim, runner11); 
 
-	    if (i == 0) {
-		if (leaderType == 0 ) {
-		    c = new RandomController(sim, gvf);
-		} else if (leaderType == 1) {
-		    c = new LeadingController(sim, gvf);
-		}
-		fc = c;
-		leader = gvf;
-	    } else {
-		if (leader != null) {
-		    c = new FollowingController(sim, gvf, leader);
-		    if (leaderType == 1) {
-			((LeadingController)fc).addFollower(gvf);
-		    }
-		} else {
-		    System.err.println("ERROR: no leader vehicle defined.");
-		    System.exit(-1);
-		}
-	    }
-	    sim.addRunner(gvf);
-	    gvf.addSimulator(sim);
-	    c.start();
-	    gvf.start();
-	}*/
+	double[] initialPos12 = {runner2x,team1y, 0};
+	Runner runner12 = new Runner(initialPos12, 0, false, 0, 0);
+	RunnerController c12 = new RunnerController(sim, runner12,runner11);
+	
+	double[] initialPos13 = {runner3x,team1y, 0};
+	Runner runner13 = new Runner(initialPos13, 0, false, 0, 0);
+	RunnerController c13 = new RunnerController(sim, runner13,runner12);
+	
+	double[] initialPos14 = {runner4x,team1y, 0};
+	Runner runner14 = new Runner(initialPos14, 0, false, 0, 0);
+	RunnerController c14 = new RunnerController(sim, runner14,runner13);
+	
+	double[] initialPos21 = {runner1x,team2y, 0};
+	Runner runner21 = new Runner(initialPos21, 0, false, 1, 0);
+	RunnerController c21 = new FirstRunnerController(sim, runner21);
+	
+	double[] initialPos22 = {runner2x,team2y, 0};
+	Runner runner22 = new Runner(initialPos22, 0, false, 1, 0);
+	RunnerController c22 = new RunnerController(sim, runner22,runner21);
+	
+	double[] initialPos23 = {runner3x,team2y, 0};
+	Runner runner23 = new Runner(initialPos23, 0, false, 1, 0);
+	RunnerController c23 = new RunnerController(sim, runner23,runner22);
+	
+	double[] initialPos24 = {runner4x,team2y, 0};
+	Runner runner24 = new Runner(initialPos24, 0, false, 1, 0);
+	RunnerController c24 = new RunnerController(sim, runner24,runner23);
+	
+	sim.addRunner(runner11);
+	sim.addRunner(runner12);
+	sim.addRunner(runner13);
+	sim.addRunner(runner14);
+	sim.addRunner(runner21);
+	sim.addRunner(runner22);
+	sim.addRunner(runner23);
+	sim.addRunner(runner24);
+	
+	runner11.addSimulator(sim);
+	runner12.addSimulator(sim);
+	runner13.addSimulator(sim);
+	runner14.addSimulator(sim);
+	runner21.addSimulator(sim);
+	runner22.addSimulator(sim);
+	runner23.addSimulator(sim);
+	runner24.addSimulator(sim);
+	
+    c11.start();
+    c12.start();
+    c13.start();
+    c14.start();
+    c21.start();
+    c22.start();
+    c23.start();
+    c24.start();
+    
+    
+    
+    runner11.start();
+    runner12.start();
+    runner13.start();
+    runner14.start();
+    runner21.start();
+    runner22.start();
+    runner23.start();
+    runner24.start();
+    
+    sim.start();  
+
+	
+	
     }
 }

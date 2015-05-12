@@ -41,9 +41,10 @@ public class Runner extends Thread
 	dx = s * Math.cos(theta);
 	dy = s * Math.sin(theta);
 	dtheta = 0;
-    
-	clampPosition();
-	clampVelocity();
+    teamID = TID;
+    legID = LID;
+	//clampPosition();
+	//clampVelocity();
 
 	r = new Random();
     }
@@ -151,7 +152,7 @@ public class Runner extends Thread
 	y = newPos[1];
 	theta = newPos[2];
 
-	clampPosition();
+	//clampPosition();
     }
 
     public synchronized void setVelocity(double[] newVel) {
@@ -162,7 +163,7 @@ public class Runner extends Thread
 	dy = newVel[1];
 	dtheta = newVel[2];		
 
-	clampVelocity();
+	//clampVelocity();
     }
 
     public synchronized void controlRunner(Control c) {
@@ -170,7 +171,7 @@ public class Runner extends Thread
 	dy = c.getSpeed() * Math.sin(theta);
 	theta = c.getAngle();
 
-	clampVelocity();
+	//clampVelocity();
     }
 
     public void run()
@@ -240,53 +241,10 @@ public class Runner extends Thread
 	return rtheta - Math.PI;
     }
 
-   /* public synchronized void advance(int sec, int msec)
-    {
-	double t = sec + msec * 1e-3;
-
-	double[] newPose = new double[3];
-	double errc = Math.sqrt(0.2) * r.nextGaussian();
-	double errd = Math.sqrt(0.1) * r.nextGaussian();
-
-	newPose[0] = x + dx * t + errd * Math.cos(theta) - errc * Math.sin(theta);
-	newPose[1] = y + dy * t + errd * Math.sin(theta) + errc * Math.cos(theta);
-	newPose[2] = theta + dtheta * t;
-	newPose[2] = normalizeAngle(newPose[2]);
-
-	double[] newVel = new double[3];
-	double s = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-	newVel[0] = s * Math.cos(theta);
-	newVel[1] = s * Math.sin(theta);
-	newVel[2] = dtheta;
-
-	setPosition(newPose);
-	setVelocity(newVel);
-    }    */
    
     public synchronized void advanceNoiseFree(int sec, int msec)
     {
 	double t = sec + msec * 1e-3;
-
-	// // Linear approximation model
-	// x = x + dx*t;
-	// y = y + dy*t;
-	// theta = (theta + dtheta*t);
-
-	// if (theta < -Math.PI)
-	//   theta += 2*Math.PI;
-	// if (theta >= Math.PI)
-	//   theta -= 2*Math.PI;
-
-	// // If dtheta is non-zero, we just turned and so we need to update our
-	// // velocity vector. We could keep dtheta.
-	  
-	// double s = Math.sqrt((dx)*(dx) +(dy)*(dy));
-	// dx = s*Math.cos(theta);
-	// dy = s*Math.sin(theta);
-	// dtheta = dtheta;
-    
-	// Curve model
-	// Assuming that dx, dy, and dtheta was set beforehand by controlVehicle()
 	double s = Math.sqrt( dx * dx + dy * dy );
 
 	/*if (Math.abs(dtheta) > 1e-3) { // The following model is not well defined when dtheta = 0
@@ -313,10 +271,16 @@ public class Runner extends Thread
 	} else*/ {			// Straight motion. No change in theta.
 	    x = x + dx * t;
 	    y = y + dy * t;
+	    /*try {
+			sleep(20);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
 	}
 
-	clampPosition();
-	clampVelocity();
+	//clampPosition();
+	//clampVelocity();
     }
 
     public boolean getHasBaton(){
@@ -335,5 +299,11 @@ public class Runner extends Thread
     	return approachTime;
     }
     
+    public int getTeamID(){
+    	return teamID;
+    }
     
+    public int getLegID(){
+    	return legID;
+    }
 }
