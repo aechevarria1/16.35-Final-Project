@@ -8,7 +8,7 @@ public class Runner extends Thread
 {
     private double x, y, theta,approachTime;
     private double dx,dy,dtheta;
-    private int teamID,legID;
+    private int start_x;
     private boolean hasBaton,won;
     private static int totalNumVehicles = 0;
     private int vehicleID;
@@ -24,7 +24,7 @@ public class Runner extends Thread
     // for deadlock prevention
     // private ReentrantLock mygvLock;
 
-    public Runner (double pose[], double s, boolean hasBaton,int TID, int LID)
+    public Runner (double pose[], double s, boolean hasBaton, int start_x)
     {
 	if (pose.length != 3)
 	    throw new IllegalArgumentException("newPos must be of length 3");
@@ -56,6 +56,11 @@ public class Runner extends Thread
     public int getVehicleID()
     {
 	return vehicleID;
+    }
+    
+    public int getStart_x()
+    {
+	return start_x;
     }
 
     private void clampPosition() {
@@ -117,15 +122,9 @@ public class Runner extends Thread
 
     public double [] getPosition() {
 	double[] position = new double[3];
-	if (checkIfNoLock()) {
-	    synchronized(this) {
 		position[0] = x;
 		position[1] = y;
 		position[2] = theta;
-    
-		return position;
-	    }
-	}
 	return position;
     }
 
