@@ -9,7 +9,7 @@ public class Runner extends Thread
     private double x, y, theta,approachTime;
     private double dx,dy,dtheta;
     private int start_x;
-    private boolean hasBaton,won, justRan;
+    private boolean hasBaton,won, justRan,justPassed;
     private static int totalNumVehicles = 0;
     private int vehicleID;
     public int teamID,legID;
@@ -25,13 +25,14 @@ public class Runner extends Thread
     // for deadlock prevention
     // private ReentrantLock mygvLock;
 
-    public Runner (double pose[], double input_speed, boolean hasBaton, int start_x, boolean justRan, int teamID, int legID, double s)//Added TeamID,legID back. Added input Speed
+    public Runner (double pose[], double input_speed, boolean hasBaton, int start_x, boolean justRan, int teamID, int legID, double s,boolean justPassed)//Added TeamID,legID back. Added input Speed,added boolean to tell if a vehicle was just passed
     {
     	this.start_x = start_x;
     	this.hasBaton = hasBaton;
     	this.justRan = justRan;
     	this.teamID = teamID;
     	this.legID = legID;
+    	this.justPassed = justPassed;
 	if (pose.length != 3)
 	    throw new IllegalArgumentException("newPos must be of length 3");
 
@@ -274,5 +275,16 @@ public class Runner extends Thread
     public int getTeamID(){
     	return teamID;
     }
+
+	public int getLegID() {
+		return legID;
+	}
+	
+	public boolean getJustPassed() {
+		return justPassed;
+	}
     
+	public void setJustPassed(boolean b){
+		justPassed = b;
+	}
 }

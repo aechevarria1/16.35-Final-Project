@@ -14,7 +14,7 @@ public class FirstRunnerController extends Thread
 
     protected static int totalNumControllers = 0;
     protected int controllerID = 0;
-
+    
 
     
     
@@ -89,7 +89,7 @@ public class FirstRunnerController extends Thread
     	double dy = current_runner.getVelocity()[1];
     	double ndx = current_runner.getVelocity()[0];// The next vehicles velocity
     	double ndy = current_runner.getVelocity()[1];
-    	double s = Math.sqrt(dx*dx + dy*dy);
+    	double s = current_runner.getInputSpeed();
     	double ns = Math.sqrt(ndx*ndx + ndy*ndy);
     	int TID = current_runner.getTeamID();
     	Control nextControl = null;
@@ -100,15 +100,15 @@ public class FirstRunnerController extends Thread
     	//The top is team 1, the bottom is team 0
     	if (current_runner.getHasBaton() == true){
     		if (x<=20)
-    			nextControl= new Control(.5,0);
+    			nextControl= new Control(s,0);
     		else if (x>20 && x<=25){
     			if (TID == 1)
-    				nextControl = new Control(.5,-Math.PI/4);
+    				nextControl = new Control(s,-Math.PI/4);
     			else
-    				nextControl = new Control(.5,Math.PI/4);
+    				nextControl = new Control(s,Math.PI/4);
     		}
     		else if (x>25) {
-    			nextControl = new Control(1,0);
+    			nextControl = new Control(s,0);
     			/*if (TID == 1){
     				if (Math.abs(nx-x)<3){
     					System.out.println(ns);
