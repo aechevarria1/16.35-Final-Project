@@ -75,7 +75,7 @@ public class Simulator extends Thread
 	double gvTheta[] = new double[RunnerList.size()];
 	displayClient.traceOn();
 
-	while (curentSec < 100) {
+	while (curentSec < 100000) {
 	    
 	    int deltaSec = curentSec - _lastUpdateSec;
 	    int deltaMSec = curentMSec - _lastUpdateMSec;
@@ -169,37 +169,49 @@ public class Simulator extends Thread
 	int runner3x = 110;
 	int runner4x = 160;
     
+	
    	double[] initialPos11 = {runner1x,team1y, 0};
-	Runner runner11 = new Runner(initialPos11, 0, false, runner1x);
-	FirstRunnerController c11 = new FirstRunnerController(sim, runner11);
+	Runner runner11 = new Runner(initialPos11, 0, true, runner1x, false);
 
 	double[] initialPos12 = {runner2x,team1y, 0};
-	Runner runner12 = new Runner(initialPos12, 0, false, runner2x);
-	RunnerController c12 = new RunnerController(sim, runner12, runner11);
+	Runner runner12 = new Runner(initialPos12, 0, false, runner2x, false);
+
 	
 	double[] initialPos13 = {runner3x,team1y, 0};
-	Runner runner13 = new Runner(initialPos13, 0, false, runner3x);
-	RunnerController c13 = new RunnerController(sim, runner13, runner12);
+	Runner runner13 = new Runner(initialPos13, 0, false, runner3x, false);
+
 	
 	double[] initialPos14 = {runner4x,team1y, 0};
-	Runner runner14 = new Runner(initialPos14, 0, false, runner4x);
-	RunnerController c14 = new RunnerController(sim, runner14, runner13);
+	Runner runner14 = new Runner(initialPos14, 0, false, runner4x, false);
+
 	
 	double[] initialPos21 = {runner1x,team2y, 0};
-	Runner runner21 = new Runner(initialPos21, 0, false, runner1x);
-	FirstRunnerController c21 = new FirstRunnerController(sim, runner21);
+	Runner runner21 = new Runner(initialPos21, 0, true, runner1x, false);
+
 	
 	double[] initialPos22 = {runner2x,team2y, 0};
-	Runner runner22 = new Runner(initialPos22, 0, false, runner2x);
-	RunnerController c22 = new RunnerController(sim, runner22, runner21);
+	Runner runner22 = new Runner(initialPos22, 0, false, runner2x, false);
+
 	
 	double[] initialPos23 = {runner3x,team2y, 0};
-	Runner runner23 = new Runner(initialPos23, 0, false, runner3x);
-	RunnerController c23 = new RunnerController(sim, runner23, runner22);
+	Runner runner23 = new Runner(initialPos23, 0, false, runner3x, false);
+
 	
 	double[] initialPos24 = {runner4x,team2y, 0};
-	Runner runner24 = new Runner(initialPos24, 0, false, runner4x);
-	RunnerController c24 = new RunnerController(sim, runner24, runner23);
+	Runner runner24 = new Runner(initialPos24, 0, false, runner4x, false);
+
+	
+	
+	FirstRunnerController c11 = new FirstRunnerController(sim, runner11, runner12);
+	RunnerController c12 = new RunnerController(sim, runner12, runner13, runner11);
+	RunnerController c13 = new RunnerController(sim, runner13, runner14, runner12);
+	LastRunnerController c14 = new LastRunnerController(sim, runner14, runner13);
+	FirstRunnerController c21 = new FirstRunnerController(sim, runner21, runner22);
+	RunnerController c22 = new RunnerController(sim, runner22, runner23, runner21);
+	RunnerController c23 = new RunnerController(sim, runner23, runner24, runner22);
+	LastRunnerController c24 = new LastRunnerController(sim, runner24, runner23);
+
+	
 	
 	sim.addRunner(runner11);
 	sim.addRunner(runner12);

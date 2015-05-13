@@ -6,8 +6,8 @@ public class FirstRunnerController extends Thread
 
 	
 	private Simulator s;
-    protected Runner v;
-    protected Runner prev_runner;
+    protected Runner current_runner;
+    protected Runner next_runner;
     
     private int _lastCheckedTime = 0;
     private int _lastCheckedMTime = 0;
@@ -18,17 +18,12 @@ public class FirstRunnerController extends Thread
 
     
     
-    public FirstRunnerController(Simulator s, Runner v) throws IllegalArgumentException
+    public FirstRunnerController(Simulator s, Runner current_v, Runner next_runner) throws IllegalArgumentException
     {
-	if (s == null) {
-	    throw new IllegalArgumentException("No simulator specified.");
-	}
-	if (v == null) {
-	    throw new IllegalArgumentException("No vehicle specified.");
-	}
-	this.s = s;
-	this.v = v;
-
+    	this.s = s;
+    	this.current_runner = current_v;
+    	this.next_runner = next_runner;
+	
 	synchronized (RunnerController.class) {
 	    controllerID = totalNumControllers;
 	    totalNumControllers++;
@@ -40,7 +35,7 @@ public class FirstRunnerController extends Thread
 	int currentTime = 0;
 	int currentMTime = 0;
 	
-	while(currentTime < 100.0) {
+	while(currentTime < 100000.0) {
 
 	    synchronized(s) {
 		currentTime = s.getCurrentSec();
@@ -63,7 +58,7 @@ public class FirstRunnerController extends Thread
 	    Control nextControl = this.getControl(currentTime, currentMTime);
 
 	    if (nextControl != null) {
-		v.controlRunner(nextControl); 
+		current_runner.controlRunner(nextControl); 
 	    }
 
 	    //update the time of the last control
@@ -82,28 +77,41 @@ public class FirstRunnerController extends Thread
 	}
     }
 
-    public Control getControl(int sec, int msec)
+    public synchronized Control getControl(int sec, int msec)
     {
 
     	double controlTime = sec+msec*1E-3;
-    	double x = v.getPosition()[0];
-    	double y = v.getPosition()[1];
+    	double x = current_runner.getPosition()[0];
+    	double y = current_runner.getPosition()[1];
     	Control nextControl = null;
+    	double dist_bw_runners = next_runner.getPosition()[0] - current_runner.getPosition()[0];
 
-
-    	if (y<55){
-    		nextControl= new Control(1,Math.PI/4);
+    	//first runner starts off with the baton and runs
+    	if (current_runner.getHasBaton() == true){
+        	if (y<55){
+        		nextControl= new Control(1,Math.PI/4);
+        	}
+        	else if (y>55)
+        		nextControl= new Control(1,-Math.PI/4);
+        	else if (y == 55)
+        		nextControl = new Control(1,0);
+        	
+    	//  stop if you are within a certain distance of the next runner
+    	if(dist_bw_runners < 10){  // && y == 55) {
+       		nextControl = new Control(0,0);
+    		current_runner.setHasBaton(false);
+    		current_runner.setJustRan(true);
+    		}	
     	}
-    	else if (y>55)
-    		nextControl= new Control(1,-Math.PI/4);
-    	else if (y == 55)
-    		nextControl = new Control(1,0);
     	
+    	//don't move anymore once this runner hands off the baton
+    	if (current_runner.getHasBaton() == false){
+    		nextControl = new Control(0,0);
+    	}
     	return nextControl;
-        }
     
-   
+    }
+    
 
-   
 
 }

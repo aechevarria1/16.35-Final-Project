@@ -2,12 +2,17 @@
 public class RunnerController extends FirstRunnerController {
 
 
-	private Runner previous_runner;
-    public RunnerController(Simulator s, Runner v, Runner prev_runner)
+	private Runner prev_runner;
+	private Runner current_runner;
+	private Runner next_runner;
+	
+    public RunnerController(Simulator s, Runner current_v, Runner next_runner, Runner prev_runner)
 			throws IllegalArgumentException {
-		super(s, v);
+		super(s, current_v, next_runner);
 		// TODO Auto-generated constructor stub
-		   this.previous_runner = prev_runner;
+		   this.prev_runner = prev_runner;
+		   this.current_runner = current_v;
+		   this.next_runner = next_runner;
     }
  
     
@@ -17,32 +22,46 @@ public class RunnerController extends FirstRunnerController {
     
     
 
-	public Control getControl(int sec, int msec)
+	public synchronized Control getControl(int sec, int msec)
     {
 	double controlTime = sec+msec*1E-3;
-	double x = v.getPosition()[0];
-	double y = v.getPosition()[1];
+	double x = current_runner.getPosition()[0];
+	double y = current_runner.getPosition()[1];
 	Control nextControl = null;
-	//Testing to make sure the runner can change direction properly. Every quadrant it will switch
+	double dist_bw_next_runner = next_runner.getPosition()[0] - current_runner.getPosition()[0];
 
-
-	
-	if (previous_runner.getPosition()[0] < v.getStart_x() ){
+//if the previous runner still has the baton, don't move
+	if (prev_runner.getHasBaton() == true)
 		nextControl = new Control(0,0);
-    	return nextControl;    		
+	//if the previous runner doesn't have the baton and just ran, start moving
+	else if (prev_runner.getHasBaton() == false && prev_runner.getJustRan() == true){
+    	if (y<55){
+    		nextControl= new Control(1,Math.PI/4);
+    	}
+    	else if (y>55)
+    		nextControl= new Control(1,-Math.PI/4);
+    	else if (y == 55)
+    		nextControl = new Control(1,0);
+    	//once you reach the stopping point, stop moving and set hasBaton to false and set justRan to true
+	if (dist_bw_next_runner < 10){
+		nextControl = new Control(0,0);
+		current_runner.setHasBaton(false);
+		current_runner.setJustRan(true);
+		
 	}
-	else{
-	if (y<55){
-		nextControl= new Control(1,3*Math.PI/8);
+	if (current_runner.getHasBaton() == false && current_runner.getJustRan() == true){
+		nextControl = new Control(0,0);
 	}
-	else if (y>55)
-		nextControl= new Control(1,-3*Math.PI/8);
-	else if (y == 55)
-		nextControl = new Control(1,0);
+	
+	}
+	
+	
 	
 	return nextControl;
-	}
-}
+    
+	
+	
+    }
 
 
 }
