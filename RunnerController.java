@@ -1,103 +1,97 @@
-import java.util.*;
-import java.lang.IllegalArgumentException;
 
-public class RunnerController extends Thread
-{
-    protected Simulator s; //Changed from private to protected
-    protected Runner v;
-    protected Runner pv; //Previous runner
-    
-    private int _lastCheckedTime = 0;
-    private int _lastCheckedMTime = 0;
+public class RunnerController extends FirstRunnerController {
 
-    protected static int totalNumControllers = 0;
-    protected int controllerID = 0;
-    
-    
-    public RunnerController(Simulator s, Runner v, Runner pv) throws IllegalArgumentException
-    {
-	if (s == null) {
-	    throw new IllegalArgumentException("No simulator specified.");
-	}
-	if (v == null) {
-	    throw new IllegalArgumentException("No vehicle specified.");
-	}
-	this.s = s;
-	this.v = v;
-	this.pv = pv;
-	synchronized (RunnerController.class) {
-	    controllerID = totalNumControllers;
-	    totalNumControllers++;
-	}
+
+	private Runner prev_runner;
+	private Runner current_runner;
+	private Runner next_runner;
+    public RunnerController(Simulator s, Runner current_v, Runner next_runner, Runner prev_runner)
+			throws IllegalArgumentException {
+		super(s, current_v, next_runner);
+		// TODO Auto-generated constructor stub
+		   this.prev_runner = prev_runner;
+		   this.current_runner = current_v;
+		   this.next_runner = next_runner;
     }
+ 
+    
+    
+    
+    
+    
+    
 
-    public void run()
+	public synchronized Control getControl(int sec, int msec)
     {
-	int currentTime = 0;
-	int currentMTime = 0;
-	while(currentTime < 100.0) {
+	double controlTime = sec+msec*1E-3;
+	double x = current_runner.getPosition()[0];
+	double y = current_runner.getPosition()[1];
+	int TID = current_runner.getTeamID();
+	Control nextControl = null;
+	double prev_speed = 1;
+	double dist_bw_next_runner = next_runner.getPosition()[0] - current_runner.getPosition()[0];
 
-	    synchronized(s) {
-		currentTime = s.getCurrentSec();
-		currentMTime = s.getCurrentMSec();
-
-		while (_lastCheckedTime == currentTime && _lastCheckedMTime == currentMTime) {
-		    try {
-			s.wait(); // Wait for the simulator to notify
-			currentTime = s.getCurrentSec();
-			currentMTime = s.getCurrentMSec();
-		    } catch (java.lang.InterruptedException e) {
-			System.err.printf("Interrupted " + e);
-			System.exit(0);
-		    }
-		}
-		s.notifyAll();
-	    }
-
-	    // Generate a new control
-	    Control nextControl = this.getControl(currentTime, currentMTime);
-
-	    if (nextControl != null) {
-		v.controlRunner(nextControl); 
-	    }
-
-	    //update the time of the last control
-	    _lastCheckedTime = currentTime;
-	    _lastCheckedMTime = currentMTime;
-
-	    synchronized(s){
-		if(s.numControlToUpdate == 0 ) {
-		    //this should not already be zero - something is wrong
-		    System.err.println("ERROR: No of controllers to update already 0.\n");
-		    System.exit(-1);
-		}
-		s.numControlToUpdate--;
-		s.notifyAll();
-	    }
+//if the previous runner still has the baton, don't move
+	if (prev_runner.getHasBaton() == true && prev_runner.getJustRan() == false)
+		nextControl = new Control(0,0);
+	//if the previous runner is approaching with baton
+	else if (prev_runner.getHasBaton() == true && prev_runner.getJustRan() == true){
+    	if (TID == 0 && Math.abs(y-55)>1e-2){
+    		nextControl= new Control(1,Math.PI/4);
+    	}
+    	else if (TID == 1 && Math.abs(y-55)>1e-2)
+    		nextControl= new Control(1,-Math.PI/4);
+    	//Runner slows down to make sure the previous one can catch
+		else if (Math.abs(y-55)<1e-2)
+			nextControl = new Control(prev_speed/2,0);
 	}
-    }
-
-    public Control getControl(int sec, int msec)
-    {
-    	double px = pv.getPosition()[0];
-    	double x = v.getPosition()[0];
-    	int TID = v.getTeamID();
-    	Control nextControl = null;
-    	if (px>15 && x<35){ //Starts at position 30,60
-    		if (TID == 1)
-    			nextControl = new Control(.5,-Math.PI/4);
-    		else
-    			nextControl = new Control(.5,Math.PI/4);
-    	}
-    	else if (x>=35 && x<40){
-    			nextControl = new Control(.3,0);
-    	}
+	//once the baton is handed off
+	else {
+		current_runner.setHasBaton(true);
+	}
+    	//once you reach the stopping point, stop moving and set hasBaton to false and set justRan to true
+	if (dist_bw_next_runner < 10){
+		nextControl = new Control(0,0);
+		current_runner.setHasBaton(false);
+		current_runner.setJustRan(true);
+		
+	}
+	if (current_runner.getHasBaton() == false && current_runner.getJustRan() == true){
+		nextControl = new Control(0,0);
+	}
+	
+	
+	
+	
 	return nextControl;
+    
+	
+	
     }
 
-    
-   
-
-   
+	public Control passVehicle(double x, double y, int TID, double nx, double ny, double s){
+    	Control c = null;
+    	if (TID == 1){
+	    	if (nx>x && y<ny+1) //First maneuver up
+	    		c = new Control(s,Math.PI/4);
+	    	else if (y>ny+1 && x<nx+2)
+	    		c = new Control(s,0);//second maneuver to move foward
+	    	else if (x>nx+2 && Math.abs(y-ny)>1e-2)
+	    		c = new Control(s,-Math.PI/4);//third maneuver to move back into the lane
+	    	else 
+	    		c = new Control(s,0);//continue to run normally
+    	}
+    	else {
+    		if (nx>x && y>ny-1) 
+	    		c = new Control(s,-Math.PI/4);
+	    	else if (y<ny-1 && x<nx+2)
+	    		c = new Control(s,0);
+	    	else if (x>nx+2 && Math.abs(y-ny)>1e-2)
+	    		c = new Control(s,Math.PI/4);
+	    	else 
+	    		c = new Control(s,0);
+    	}
+    	return c;
+    }
 
 }
