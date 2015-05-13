@@ -44,12 +44,12 @@ public class Simulator extends Thread
 
     public synchronized void addRunner(Runner gv){
 	RunnerList.add(gv);
-	System.out.printf("---------Adding Ground Vehicle-----------\n");
+	//System.out.printf("---------Adding Ground Vehicle-----------\n");
 	for(int i=0;i < RunnerList.size(); i++){
 	    Runner mgv = RunnerList.get(i);
 	    double position[] = mgv.getPosition();
-	    System.out.printf("%d : %f,%f,%f \n", mgv.getVehicleID(),
-			      position[0], position[1], position[2]);
+	    //System.out.printf("%d : %f,%f,%f \n", mgv.getVehicleID(),
+			    //  position[0], position[1], position[2]);
 	}
 	numVehicleToUpdate++;
 	numControlToUpdate++;
@@ -163,16 +163,17 @@ public class Simulator extends Thread
 	double team1y = 50;
 	double team2y = 60;
 	double runner1x = 10;
-	double runner2x = 60;
+	double runner2x = 30; //Changing for test
 	double runner3x = 110;
 	double runner4x = 160;
     
    	double[] initialPos11 = {runner1x,team1y, 0};
 	Runner runner11 = new Runner(initialPos11, 0, false, 0, 0);
-	RunnerController c11 = new FirstRunnerController(sim, runner11); 
-
 	double[] initialPos12 = {runner2x,team1y, 0};
 	Runner runner12 = new Runner(initialPos12, 0, false, 0, 0);
+	 
+	RunnerController c11 = new FirstRunnerController(sim, runner11,runner12); 
+
 	RunnerController c12 = new RunnerController(sim, runner12,runner11);
 	
 	double[] initialPos13 = {runner3x,team1y, 0};
@@ -185,10 +186,11 @@ public class Simulator extends Thread
 	
 	double[] initialPos21 = {runner1x,team2y, 0};
 	Runner runner21 = new Runner(initialPos21, 0, false, 1, 0);
-	RunnerController c21 = new FirstRunnerController(sim, runner21);
-	
 	double[] initialPos22 = {runner2x,team2y, 0};
 	Runner runner22 = new Runner(initialPos22, 0, false, 1, 0);
+	
+	RunnerController c21 = new FirstRunnerController(sim, runner21,runner22);
+
 	RunnerController c22 = new RunnerController(sim, runner22,runner21);
 	
 	double[] initialPos23 = {runner3x,team2y, 0};

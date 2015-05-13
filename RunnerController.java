@@ -30,23 +30,6 @@ public class RunnerController extends Thread
 	    totalNumControllers++;
 	}
     }
-    
-    public RunnerController(Simulator s, Runner v) throws IllegalArgumentException
-    {
-	if (s == null) {
-	    throw new IllegalArgumentException("No simulator specified.");
-	}
-	if (v == null) {
-	    throw new IllegalArgumentException("No vehicle specified.");
-	}
-	this.s = s;
-	this.v = v;
-
-	synchronized (RunnerController.class) {
-	    controllerID = totalNumControllers;
-	    totalNumControllers++;
-	}
-    }
 
     public void run()
     {
@@ -96,7 +79,19 @@ public class RunnerController extends Thread
 
     public Control getControl(int sec, int msec)
     {
+    	double px = pv.getPosition()[0];
+    	double x = v.getPosition()[0];
+    	int TID = v.getTeamID();
     	Control nextControl = null;
+    	if (px>15 && x<35){ //Starts at position 30,60
+    		if (TID == 1)
+    			nextControl = new Control(.5,-Math.PI/4);
+    		else
+    			nextControl = new Control(.5,Math.PI/4);
+    	}
+    	else if (x>=35 && x<40){
+    			nextControl = new Control(.3,0);
+    	}
 	return nextControl;
     }
 
