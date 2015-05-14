@@ -37,11 +37,13 @@ public class RunnerController extends FirstRunnerController {
 	Control nextControl = null;
 	double prev_speed = prev_runner.getInputSpeed();
 	double this_speed = current_runner.getInputSpeed();
+	double comp_speed = comp_runner.getInputSpeed();
 	double dist_bw_next_runner = next_runner.getPosition()[0] - current_runner.getPosition()[0];
 
 //if the previous runner still has the baton, don't move
-	if (prev_runner.getHasBaton() == true && prev_runner.getJustRan() == false)
-		nextControl = new Control(0,0);
+	if (prev_runner.getHasBaton() == true && prev_runner.getJustRan() == false){
+		nextControl = new Control(0,0);}
+
 	//if the previous runner is approaching with baton
 	else if (prev_runner.getHasBaton() == true && prev_runner.getJustRan() == true){
     	if (TID == 0 && Math.abs(y-55)>1e-2){
@@ -59,40 +61,60 @@ public class RunnerController extends FirstRunnerController {
 		current_runner.setHasBaton(true);
 	}
 	
-	//Runner moving outside hand off zone
+	//Passing another runner
+	//HERE'S WHERE THE ERROR WAS, it comes right back here as soon as the vehicle passes, so add the part to go back down in here.
 	if (current_runner.getHasBaton() == true && current_runner.getJustRan() == false) {
 		nextControl = new Control(this_speed,0);
-		//System.out.println(current_runner.getLegID() + "," + next_runner.getLegID());
-		if (Math.abs(cx-x)<3){ //Making sure they are within distance
-			//System.out.println("test");
+    	
+		if (x>cx+2 &&  Math.abs(y-cy)>1e-2 && TID == 1){
+    		nextControl = new Control(this_speed,-Math.PI/4);}
+		
+		if (x>cx+2 && Math.abs(y-cy)<1e-2 && TID == 0)
+    		nextControl = new Control(this_speed,Math.PI/4);
+		
+		
+		if (Math.abs(cx-x)<3){ //Making sure they are within a good distance to be able to pass
 			if (cx>x){
-				//System.out.println("test");
 				if (counter == 0){
 					current_runner.setJustPassed(true);
 					counter++;
 				}
-				if (current_runner.getJustPassed() == true)
-					return nextControl = passVehicle(x,y,TID,cx,cy,2*comp_runner.getInputSpeed()); //Passing runner will be twice the speed of the passed runner
+				if (current_runner.getJustPassed() == true && nx-cx-20>0){ //Make sure the runner can have enought time to pass before the exchange zone
+					nextControl = passVehicle(x,y,TID,cx,cy,2*comp_runner.getInputSpeed());
+				}//Passing runner will be twice the speed of the passed runner
+				else if (current_runner.getJustPassed() == true && nx-cx-20<0)
+					nextControl = new Control(comp_speed,0);
 			}
+			
 			else if (cx<x){
 				counter++;
 			}
 		}
+		
+		if(dist_bw_next_runner < 10){
+	   		//nextControl = new Control(0,0);
+			//current_runner.setHasBaton(false);
+			current_runner.setJustRan(true); //  runner is approaching next runner
+			}	
 		//System.out.println("test");
 		
 	}
-    	//once you reach the stopping point, stop moving and set hasBaton to false and set justRan to true
-	/*if (dist_bw_next_runner < 10){
-		nextControl = new Control(0,0);
-		current_runner.setHasBaton(false);
-		current_runner.setJustRan(true);
-		
+	
+	else if (current_runner.getJustRan() == true && next_runner.getHasBaton() == false){
+		nextControl = new Control(this_speed,0);
+		//System.out.println(current_runner.getHasBaton());
+		if (dist_bw_next_runner < 3) {
+			current_runner.setHasBaton(false);//runner is passing baton
+			next_runner.setHasBaton(true);
+			nextControl = new Control(0,0);
+			System.out.println(current_runner.getHasBaton());
+		}
 	}
-	if (current_runner.getHasBaton() == false && current_runner.getJustRan() == true){
+	
+	else if (current_runner.getJustRan() == true && next_runner.getHasBaton() == true){
 		nextControl = new Control(0,0);
-	}*/
-	
-	
+		System.out.println(current_runner.getHasBaton());
+	}
 	
 	
 	return nextControl;
@@ -101,30 +123,28 @@ public class RunnerController extends FirstRunnerController {
 	
     }
 
-	public Control passVehicle(double x, double y, int TID, double cx, double cy, double s){
+	public synchronized Control passVehicle(double x, double y, int TID, double cx, double cy, double s){
     	Control c = null;
-    	//System.out.println("test");
+    //CONTROLS FOR TEAM 1	
     	if (TID == 1){
-	    	if (cx>x && y<cy+1) //First maneuver up
-	    		c = new Control(s,Math.PI/4);
-	    	else if (y>cy+1 && x<cx+2){
-	    		c = new Control(s,0);
-	    		System.out.println(y-cy);
-	    	}//second maneuver to move foward
-	    	else if (x>cx+2 &&  Math.abs(y-cy)>1e-2){
-	    		//System.out.println("test");
-	    		c = new Control(s,-Math.PI/4);
-	    	}//third maneuver to move back into the lane
+    		//competitor is ahead of you: maneuver up
+	    	if (cx>x && y<cy+1){ //First maneuver up
+	    		c = new Control(s,Math.PI/4);} //t = s/sqrt(2) * 2 for the other direction
+	    	else if (cx>x+2 && y>cy+1){//then move forward
+	    		c = new Control(s,0); //t = s/((sqrt(2)-1)+2)
+	    	}//maneuver back down now that you're ahead of the competitor
+	    		//moved this if statement above
+	    	//third maneuver to move back into the lane
 	    	else 
 	    		c = new Control(s,0);//continue to run normally
     	}
+    //CONTROLS FOR TEAM 2	
     	else {
     		if (cx>x && y>cy-1) 
 	    		c = new Control(s,-Math.PI/4);
 	    	else if (y<cy-1 && x<cx+2)
 	    		c = new Control(s,0);
-	    	else if (x>cx+2 && Math.abs(y-cy)>1e-2)
-	    		c = new Control(s,Math.PI/4);
+	    	//moved this if statement above
 	    	else {
 	    		c = new Control(s,0);
 	    	}

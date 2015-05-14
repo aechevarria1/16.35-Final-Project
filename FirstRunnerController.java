@@ -95,6 +95,8 @@ public class FirstRunnerController extends Thread
     	Control nextControl = null;
     	double dist_bw_runners = next_runner.getPosition()[0] - current_runner.getPosition()[0];
 
+    	//the first runner never has to pass another runner.
+    	
     	//first runner starts off with the baton and runs
     	//Testing to make sure the runner can change direction properly. Every quadrant it will switch
     	//The top is team 1, the bottom is team 0
