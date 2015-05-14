@@ -9,7 +9,7 @@ public class Runner extends Thread
     private double x, y, theta,approachTime;
     private double dx,dy,dtheta;
     private int start_x;
-    private boolean hasBaton,won, justRan,justPassed, doneRunning;
+    private boolean hasBaton,hasWon, justRan,justPassed, doneRunning;
     private static int totalNumVehicles = 0;
     private int vehicleID;
     public int teamID,legID;
@@ -25,7 +25,7 @@ public class Runner extends Thread
     // for deadlock prevention
     // private ReentrantLock mygvLock;
 
-    public Runner (double pose[], double input_speed, boolean hasBaton, int start_x, boolean justRan, int teamID, int legID, double s,boolean justPassed, boolean doneRunning)//Added TeamID,legID back. Added input Speed,added boolean to tell if a vehicle was just passed
+    public Runner (double pose[], double input_speed, boolean hasBaton, int start_x, boolean justRan, int teamID, int legID, double s,boolean justPassed, boolean doneRunning, boolean hasWon)//Added TeamID,legID back. Added input Speed,added boolean to tell if a vehicle was just passed
     {
     	this.start_x = start_x;
     	this.hasBaton = hasBaton;
@@ -270,12 +270,12 @@ public class Runner extends Thread
     	this.doneRunning = doneRunning;
     }
     
-    public boolean getWon(){
-    	return won;
+    public boolean getHasWon(){
+    	return hasWon;
     }
     
-    public void setWon(boolean w){
-    	won = w;
+    public void setHasWon(boolean hasWon){
+    	hasWon = hasWon;
     }
     
     public double getApproachTime(){
@@ -290,11 +290,11 @@ public class Runner extends Thread
 		return legID;
 	}
 	
-	public boolean getJustPassed() {
+	public synchronized boolean getJustPassed() {
 		return justPassed;
 	}
     
-	public void setJustPassed(boolean b){
+	public synchronized void setJustPassed(boolean b){
 		justPassed = b;
 	}
 }
