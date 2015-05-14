@@ -156,6 +156,10 @@ public class Simulator extends Thread
 	
 	int numberofVehicles = 1;
 	String host = args[0];
+	// The args are going to specify each runner's speed. here is what args will be
+	//host,11,12,13,14,21,22,23,24
+	//(where 11 is the speed of runner11, for example)
+	//no commas
 
 	DisplayClient dpClient = new DisplayClient(host);
 
@@ -169,46 +173,46 @@ public class Simulator extends Thread
 	int runner3x = 110;
 	int runner4x = 160;
     
-	
+
    	double[] initialPos11 = {runner1x,team1y, 0};
-	Runner runner11 = new Runner(initialPos11, 0, true, runner1x, false);
+	Runner runner11 = new Runner(initialPos11, Double.parseDouble(args[1]), true, runner1x, false,0,1,0,false, false);
 
 	double[] initialPos12 = {runner2x,team1y, 0};
-	Runner runner12 = new Runner(initialPos12, 0, false, runner2x, false);
+	Runner runner12 = new Runner(initialPos12, Double.parseDouble(args[2]), false, runner2x, false,0,2,0,false, false);
 
 	
 	double[] initialPos13 = {runner3x,team1y, 0};
-	Runner runner13 = new Runner(initialPos13, 0, false, runner3x, false);
+	Runner runner13 = new Runner(initialPos13, Double.parseDouble(args[3]), false, runner3x, false,0,3,0,false, false);
 
 	
 	double[] initialPos14 = {runner4x,team1y, 0};
-	Runner runner14 = new Runner(initialPos14, 0, false, runner4x, false);
+	Runner runner14 = new Runner(initialPos14, Double.parseDouble(args[4]), false, runner4x, false,0,4,0,false, false);
 
 	
 	double[] initialPos21 = {runner1x,team2y, 0};
-	Runner runner21 = new Runner(initialPos21, 0, true, runner1x, false);
-
+	Runner runner21 = new Runner(initialPos21, Double.parseDouble(args[5]), true, runner1x, false,1,1,0,false, false);
+	
 	
 	double[] initialPos22 = {runner2x,team2y, 0};
-	Runner runner22 = new Runner(initialPos22, 0, false, runner2x, false);
+	Runner runner22 = new Runner(initialPos22, Double.parseDouble(args[6]), false, runner2x, false,1,2,0,false, false);
 
 	
 	double[] initialPos23 = {runner3x,team2y, 0};
-	Runner runner23 = new Runner(initialPos23, 0, false, runner3x, false);
+	Runner runner23 = new Runner(initialPos23, Double.parseDouble(args[7]), false, runner3x, false,1,3,0,false, false);
 
 	
 	double[] initialPos24 = {runner4x,team2y, 0};
-	Runner runner24 = new Runner(initialPos24, 0, false, runner4x, false);
+	Runner runner24 = new Runner(initialPos24, Double.parseDouble(args[8]), false, runner4x, false,1,4,0,false, false);
 
 	
 	
 	FirstRunnerController c11 = new FirstRunnerController(sim, runner11, runner12);
-	RunnerController c12 = new RunnerController(sim, runner12, runner13, runner11);
-	RunnerController c13 = new RunnerController(sim, runner13, runner14, runner12);
+	RunnerController c12 = new RunnerController(sim, runner12, runner13, runner11,runner22);
+	RunnerController c13 = new RunnerController(sim, runner13, runner14, runner12,runner23);
 	LastRunnerController c14 = new LastRunnerController(sim, runner14, runner13);
 	FirstRunnerController c21 = new FirstRunnerController(sim, runner21, runner22);
-	RunnerController c22 = new RunnerController(sim, runner22, runner23, runner21);
-	RunnerController c23 = new RunnerController(sim, runner23, runner24, runner22);
+	RunnerController c22 = new RunnerController(sim, runner22, runner23, runner21,runner12);
+	RunnerController c23 = new RunnerController(sim, runner23, runner24, runner22,runner13);
 	LastRunnerController c24 = new LastRunnerController(sim, runner24, runner23);
 
 	

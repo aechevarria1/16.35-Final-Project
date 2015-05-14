@@ -9,10 +9,11 @@ public class Runner extends Thread
     private double x, y, theta,approachTime;
     private double dx,dy,dtheta;
     private int start_x;
-    private boolean hasBaton,won, justRan;
+    private boolean hasBaton,won, justRan,justPassed, doneRunning;
     private static int totalNumVehicles = 0;
     private int vehicleID;
-
+    public int teamID,legID;
+    private double input_speed; //User inputted speed
     private Simulator _s = null;
 
     private int _lastCheckedTime = 0;
@@ -24,11 +25,15 @@ public class Runner extends Thread
     // for deadlock prevention
     // private ReentrantLock mygvLock;
 
-    public Runner (double pose[], double s, boolean hasBaton, int start_x, boolean justRan)
+    public Runner (double pose[], double input_speed, boolean hasBaton, int start_x, boolean justRan, int teamID, int legID, double s,boolean justPassed, boolean doneRunning)//Added TeamID,legID back. Added input Speed,added boolean to tell if a vehicle was just passed
     {
     	this.start_x = start_x;
     	this.hasBaton = hasBaton;
     	this.justRan = justRan;
+    	this.teamID = teamID;
+    	this.legID = legID;
+    	this.justPassed = justPassed;
+    	this.doneRunning = doneRunning;
 	if (pose.length != 3)
 	    throw new IllegalArgumentException("newPos must be of length 3");
 
@@ -44,6 +49,7 @@ public class Runner extends Thread
 	dx = s * Math.cos(theta);
 	dy = s * Math.sin(theta);
 	dtheta = 0;
+	this.input_speed = input_speed;
     
 	//clampPosition();
 	//clampVelocity();
@@ -236,6 +242,9 @@ public class Runner extends Thread
 	//clampVelocity();
     }
 
+    public double getInputSpeed(){
+    	return input_speed;
+    }
     public synchronized boolean getHasBaton(){
     	return hasBaton;
     }
@@ -252,6 +261,15 @@ public class Runner extends Thread
     	this.justRan = justRan;
     }
     
+    
+    public synchronized boolean getDoneRunning(){
+    	return doneRunning;
+    }
+    
+    public synchronized void setDoneRunning(boolean doneRunning){
+    	this.doneRunning = doneRunning;
+    }
+    
     public boolean getWon(){
     	return won;
     }
@@ -264,5 +282,19 @@ public class Runner extends Thread
     	return approachTime;
     }
     
+    public int getTeamID(){
+    	return teamID;
+    }
+
+	public int getLegID() {
+		return legID;
+	}
+	
+	public boolean getJustPassed() {
+		return justPassed;
+	}
     
+	public void setJustPassed(boolean b){
+		justPassed = b;
+	}
 }
