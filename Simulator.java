@@ -75,7 +75,7 @@ public class Simulator extends Thread
 	double gvTheta[] = new double[RunnerList.size()];
 	displayClient.traceOn();
 
-	while (curentSec < 100000) {
+	while (curentSec < 200000) {
 	    
 	    int deltaSec = curentSec - _lastUpdateSec;
 	    int deltaMSec = curentMSec - _lastUpdateMSec;
@@ -209,11 +209,11 @@ public class Simulator extends Thread
 	FirstRunnerController c11 = new FirstRunnerController(sim, runner11, runner12);
 	RunnerController c12 = new RunnerController(sim, runner12, runner13, runner11,runner22);
 	RunnerController c13 = new RunnerController(sim, runner13, runner14, runner12,runner23);
-	LastRunnerController c14 = new LastRunnerController(sim, runner14, runner13);
+	LastRunnerController c14 = new LastRunnerController(sim, runner14, runner13,runner12,runner24);
 	FirstRunnerController c21 = new FirstRunnerController(sim, runner21, runner22);
 	RunnerController c22 = new RunnerController(sim, runner22, runner23, runner21,runner12);
 	RunnerController c23 = new RunnerController(sim, runner23, runner24, runner22,runner13);
-	LastRunnerController c24 = new LastRunnerController(sim, runner24, runner23);
+	LastRunnerController c24 = new LastRunnerController(sim, runner24, runner23,runner22,runner14);
 
 	
 	

@@ -290,11 +290,11 @@ public class Runner extends Thread
 		return legID;
 	}
 	
-	public boolean getJustPassed() {
+	public synchronized boolean getJustPassed() {
 		return justPassed;
 	}
     
-	public void setJustPassed(boolean b){
+	public synchronized void setJustPassed(boolean b){
 		justPassed = b;
 	}
 }

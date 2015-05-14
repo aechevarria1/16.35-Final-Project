@@ -107,13 +107,13 @@ public class RunnerController extends FirstRunnerController {
 			current_runner.setHasBaton(false);//runner is passing baton
 			next_runner.setHasBaton(true);
 			nextControl = new Control(0,0);
-			System.out.println(current_runner.getHasBaton());
+			//System.out.println(current_runner.getHasBaton());
 		}
 	}
 	
 	else if (current_runner.getJustRan() == true && next_runner.getHasBaton() == true){
 		nextControl = new Control(0,0);
-		System.out.println(current_runner.getHasBaton());
+		//System.out.println(current_runner.getHasBaton());
 	}
 	
 	
