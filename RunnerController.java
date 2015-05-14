@@ -39,74 +39,71 @@ public class RunnerController extends FirstRunnerController {
 	double this_speed = current_runner.getInputSpeed();
 	double dist_bw_next_runner = next_runner.getPosition()[0] - current_runner.getPosition()[0];
 
-//if the previous runner still has the baton, don't move
-	if (prev_runner.getHasBaton() == true && prev_runner.getJustRan() == false){
-		nextControl = new Control(0,0);}
-
-	//if the previous runner is approaching with baton
-	else if (prev_runner.getHasBaton() == true && prev_runner.getJustRan() == true){
-    	if (TID == 0 && Math.abs(y-55)>1e-2){
-    		nextControl= new Control(2*prev_speed,Math.PI/4);
-    	}
-    	else if (TID == 1 && Math.abs(y-55)>1e-2)
-    		nextControl= new Control(1,-Math.PI/4);
-    	//Runner slows down to make sure the previous one can catch
-		else if (Math.abs(y-55)<1e-2)
-			nextControl = new Control(prev_speed/2,0);
-	}
-	//once the baton is handed off
-	else if (prev_runner.getHasBaton() == false && prev_runner.getJustRan() == true){
-		nextControl = new Control(this_speed,0);
-		current_runner.setHasBaton(true);
-	}
-	
-	//Passing another runner
-	//HERE'S WHERE THE ERROR WAS, it comes right back here as soon as the vehicle passes, so add the part to go back down in here.
-	if (current_runner.getHasBaton() == true && current_runner.getJustRan() == false) {
-		nextControl = new Control(this_speed,0);
-    	
-		if (x>cx+2 &&  Math.abs(y-cy)>1e-2 && TID == 1){
-    		nextControl = new Control(this_speed,-Math.PI/4);}
-		
-		if (x>cx+2 && Math.abs(y-cy)<1e-2 && TID == 0)
-    		nextControl = new Control(this_speed,Math.PI/4);
-		
-		
-		if (Math.abs(cx-x)<3){ //Making sure they are within a good distance to be able to pass
-			if (cx>x){
-				if (counter == 0){
-					current_runner.setJustPassed(true);
-					counter++;
-				}
-				if (current_runner.getJustPassed() == true)
-					return nextControl = passVehicle(x,y,TID,cx,cy,2*comp_runner.getInputSpeed()); //Passing runner will be twice the speed of the passed runner
-			}
-			else if (cx<x){
-				counter++;
-			}
+	//if the previous runner still has the baton, don't move
+		if (prev_runner.getHasBaton() == true)
+			nextControl = new Control(0,0);
+		//if the previous runner doesn't have the baton and just ran, start moving
+		else if (prev_runner.getHasBaton() == false && prev_runner.getJustRan() == true){
+	    	if (y<55){
+	    		nextControl= new Control(1,Math.PI/4);
+	    	}
+	    	else if (y>55)
+	    		nextControl= new Control(1,-Math.PI/4);
+	    	else if (y == 55)
+	    		nextControl = new Control(1,0);
+	    	//once you reach the stopping point, stop moving and set hasBaton to false and set justRan to true
+	    	
+	    	
+	    	///////PASSING
+			else if (prev_runner.getHasBaton() == false && prev_runner.getJustRan() == true){
+				current_runner.setHasBaton(true);
+				nextControl = new Control(this_speed,0);
+	//////could have lots of errors
+				//Passing another runner
+				//HERE'S WHERE THE ERROR WAS, it comes right back here as soon as the vehicle passes, so add the part to go back down in here.
+					if (y == 55){
+					nextControl = new Control(this_speed,0);}
+			    	
+					if (x>cx+2 &&  Math.abs(y-cy)>1e-2 && TID == 1){
+			    		nextControl = new Control(this_speed,-Math.PI/4);}
+					
+					if (x>cx+2 && Math.abs(y-cy)<1e-2 && TID == 0)
+			    		nextControl = new Control(this_speed,Math.PI/4);
+					
+					
+					if (Math.abs(cx-x)<3){ //Making sure they are within a good distance to be able to pass
+						if (cx>x){
+							if (counter == 0){
+								current_runner.setJustPassed(true);
+								counter++;
+								nextControl = new Control (this_speed, 0);
+							}
+							if (current_runner.getJustPassed() == true)
+								nextControl = passVehicle(x,y,TID,cx,cy,2*comp_runner.getInputSpeed()); //Passing runner will be twice the speed of the passed runner
+						}
+						else if (cx<x){
+							counter++;
+							nextControl = new Control (this_speed, 0);
+						}
+					}
+	    	///////PASSING
+	    	
+	    	
+		if (dist_bw_next_runner < 10){
+			nextControl = new Control(0,0);
+			current_runner.setHasBaton(false);
+			current_runner.setJustRan(true);
+			
 		}
-		//System.out.println("test");
+		if (current_runner.getHasBaton() == false && current_runner.getJustRan() == true){
+			nextControl = new Control(0,0);
+		}
 		
-	}
-    	//once you reach the stopping point, stop moving and set hasBaton to false and set justRan to true
-	//stop running once you reach the stopping point
-	if (dist_bw_next_runner < 10){
-		nextControl = new Control(0,0);
-		current_runner.setHasBaton(false);
-		current_runner.setDoneRunning(true);
+		}
 		
+		}	
 		
-	}//after running your leg, don't start running again
-	if (current_runner.getHasBaton() == false && current_runner.getDoneRunning() == true){
-		nextControl = new Control(0,0);
-	}
-	
-	
-	
-	
-	return nextControl;
-    
-	
+		return nextControl;
 	
     }
 
