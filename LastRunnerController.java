@@ -85,7 +85,7 @@ public class LastRunnerController extends FirstRunnerController {
 	    	//System.out.println("prev:"+prev_runner.getHasBaton()+"cur"+current_runner.getHasBaton());
 	    	if (x>cx && x>210){
 	    		current_runner.setWon(true);
-	    		System.out.println("Winning team:" + current_runner.getTeamID());
+	    	//	System.out.println("Winning team:" + current_runner.getTeamID());
 	    	}
 			return nextControl;
 	    }

@@ -74,11 +74,11 @@ public class RunnerController extends FirstRunnerController {
 		
 		
 		if (Math.abs(cx-x)<3){ //Making sure they are within a good distance to be able to pass
-			if (current_runner.getTeamID() == 0 && current_runner.getLegID()==3)
-				System.out.println(current_runner.getJustPassed());
+			//if (current_runner.getTeamID() == 0 && current_runner.getLegID()==3)
+				//System.out.println(current_runner.getJustPassed());
 			
 				if (current_runner.getJustPassed() /*&& nx-cx-15>0*/) //Make sure the runner can have enought time to pass before the exchange zone
-					nextControl = passVehicle(x,y,TID,cx,cy,2*comp_runner.getInputSpeed());
+					nextControl = passVehicle(x,y,TID,cx,cy,this_speed);
 				//Passing runner will be twice the speed of the passed runner
 				/*else if (current_runner.getJustPassed() && nx-cx-20<0)
 					nextControl = new Control(comp_speed,0);*/

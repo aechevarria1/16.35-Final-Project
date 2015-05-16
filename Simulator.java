@@ -96,7 +96,7 @@ public class Simulator extends Thread
 	    }
 	    displayClient.update(RunnerList.size(),gvX,gvY,gvTheta);
 
-	    //Check justPassed
+	    //Check justPassed and check for winner
 	    synchronized(this){
 	    for (int i=0;i < RunnerList.size();i++){
 	    	Runner cr = RunnerList.get(i);
@@ -109,6 +109,11 @@ public class Simulator extends Thread
 	    				nr.setJustPassed(true);
 	    		}
 	    		}
+	    	}
+	    	if (cr.getWon()){
+	    		System.out.println("Team "+cr.getTeamID()+" wins!");
+	    		Thread.currentThread().interrupt();
+	    		return;
 	    	}
 	    }
 	    notifyAll();
