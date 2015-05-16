@@ -6,13 +6,14 @@ import java.util.Random;
 
 public class Runner extends Thread
 {
-    private double x, y, theta,speed,approachTime;
+    private double x, y, theta,approachTime;
     private double dx,dy,dtheta;
-    private int teamID,legID;
-    private boolean hasBaton,won;
+    private int start_x;
+    private boolean hasBaton,won, justRan,justPassed, doneRunning;
     private static int totalNumVehicles = 0;
     private int vehicleID;
-
+    public int teamID,legID;
+    private double input_speed; //User inputted speed
     private Simulator _s = null;
 
     private int _lastCheckedTime = 0;
@@ -24,8 +25,15 @@ public class Runner extends Thread
     // for deadlock prevention
     // private ReentrantLock mygvLock;
 
-    public Runner (double pose[], double s, boolean hasBaton,int TID, int LID, double omega)
+    public Runner (double pose[], double input_speed, boolean hasBaton, int start_x, boolean justRan, int teamID, int legID, double s,boolean justPassed, boolean doneRunning)//Added TeamID,legID back. Added input Speed,added boolean to tell if a vehicle was just passed
     {
+    	this.start_x = start_x;
+    	this.hasBaton = hasBaton;
+    	this.justRan = justRan;
+    	this.teamID = teamID;
+    	this.legID = legID;
+    	this.justPassed = justPassed;
+    	this.doneRunning = doneRunning;
 	if (pose.length != 3)
 	    throw new IllegalArgumentException("newPos must be of length 3");
 
@@ -40,10 +48,11 @@ public class Runner extends Thread
 
 	dx = s * Math.cos(theta);
 	dy = s * Math.sin(theta);
-	dtheta = omega;
+	dtheta = 0;
+	this.input_speed = input_speed;
     
-	clampPosition();
-	clampVelocity();
+	//clampPosition();
+	//clampVelocity();
 
 	r = new Random();
     }
@@ -56,6 +65,11 @@ public class Runner extends Thread
     public int getVehicleID()
     {
 	return vehicleID;
+    }
+    
+    public int getStart_x()
+    {
+	return start_x;
     }
 
     private void clampPosition() {
@@ -70,23 +84,7 @@ public class Runner extends Thread
 
 	double velMagnitude = Math.sqrt(dx*dx+dy*dy);
 	if (velMagnitude > 10.0) {
-	    /* Note: 
-	 
-	       I could also implement this as 
 
-	       double direction = atan2(dy, dx);
-	       dx = 10.0 * cos(direction);
-	       dy = 10.0 * sin(direction);
-
-	       but since 
-	       cos(direction) = dx/velMagnitude;
-	       sin(direction) = dy/velMagnitude; 
-	 
-	       I can save myself an atan2, a cos and a sin, in exchange for two
-	       extra divisions. atan2, cos and sin are very expensive
-	       computationally. 
-
-	    */ 
 
 	    dx = 10.0 * dx/velMagnitude;
 	    dy = 10.0 * dy/velMagnitude;
@@ -99,7 +97,7 @@ public class Runner extends Thread
 	    dy = 5.0 * dy/velMagnitude;
 	}
 
-	dtheta = Math.min(Math.max(dtheta, -Math.PI/4), Math.PI/4);		
+	//dtheta = Math.min(Math.max(dtheta, -Math.PI/4), Math.PI/4);		
     }
 
     private boolean checkIfNoLock() {
@@ -117,15 +115,9 @@ public class Runner extends Thread
 
     public double [] getPosition() {
 	double[] position = new double[3];
-	if (checkIfNoLock()) {
-	    synchronized(this) {
 		position[0] = x;
 		position[1] = y;
 		position[2] = theta;
-    
-		return position;
-	    }
-	}
 	return position;
     }
 
@@ -151,7 +143,7 @@ public class Runner extends Thread
 	y = newPos[1];
 	theta = newPos[2];
 
-	clampPosition();
+	//clampPosition();
     }
 
     public synchronized void setVelocity(double[] newVel) {
@@ -162,15 +154,15 @@ public class Runner extends Thread
 	dy = newVel[1];
 	dtheta = newVel[2];		
 
-	clampVelocity();
+	//clampVelocity();
     }
 
     public synchronized void controlRunner(Control c) {
 	dx = c.getSpeed() * Math.cos(theta);
 	dy = c.getSpeed() * Math.sin(theta);
-	dtheta = c.getRotVel();
+	theta = c.getAngle();
 
-	clampVelocity();
+	//clampVelocity();
     }
 
     public void run()
@@ -178,7 +170,7 @@ public class Runner extends Thread
 	int currentTime = 0;
 	int currentMTime = 0;
 	
-	while(currentTime < 100.0){
+	while(currentTime < 100000.0){
 	    synchronized(_s){
 		currentTime = _s.getCurrentSec();
 		currentMTime = _s.getCurrentMSec();
@@ -202,12 +194,7 @@ public class Runner extends Thread
 		_s.notifyAll();
 	    }
 
-	    // // DEBUG
-	    // System.out.printf("GV %d [%d,%d] advancing\n", vehicleID, currentTime, currentMTime);
-	    // // DEBUG
 
-	    // advance(currentTime - _lastCheckedTime, 
-	    // 	    currentMTime - _lastCheckedMTime);
 
 	    advanceNoiseFree(currentTime - _lastCheckedTime, 
 	                  currentMTime - _lastCheckedMTime);
@@ -239,104 +226,75 @@ public class Runner extends Thread
 	}
 	return rtheta - Math.PI;
     }
-
-    public synchronized void advance(int sec, int msec)
-    {
-	double t = sec + msec * 1e-3;
-
-	double[] newPose = new double[3];
-	double errc = Math.sqrt(0.2) * r.nextGaussian();
-	double errd = Math.sqrt(0.1) * r.nextGaussian();
-
-	newPose[0] = x + dx * t + errd * Math.cos(theta) - errc * Math.sin(theta);
-	newPose[1] = y + dy * t + errd * Math.sin(theta) + errc * Math.cos(theta);
-	newPose[2] = theta + dtheta * t;
-	newPose[2] = normalizeAngle(newPose[2]);
-
-	double[] newVel = new double[3];
-	double s = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-	newVel[0] = s * Math.cos(theta);
-	newVel[1] = s * Math.sin(theta);
-	newVel[2] = dtheta;
-
-	setPosition(newPose);
-	setVelocity(newVel);
-    }    
    
     public synchronized void advanceNoiseFree(int sec, int msec)
     {
 	double t = sec + msec * 1e-3;
 
-	// // Linear approximation model
-	// x = x + dx*t;
-	// y = y + dy*t;
-	// theta = (theta + dtheta*t);
-
-	// if (theta < -Math.PI)
-	//   theta += 2*Math.PI;
-	// if (theta >= Math.PI)
-	//   theta -= 2*Math.PI;
-
-	// // If dtheta is non-zero, we just turned and so we need to update our
-	// // velocity vector. We could keep dtheta.
-	  
-	// double s = Math.sqrt((dx)*(dx) +(dy)*(dy));
-	// dx = s*Math.cos(theta);
-	// dy = s*Math.sin(theta);
-	// dtheta = dtheta;
-    
-	// Curve model
-	// Assuming that dx, dy, and dtheta was set beforehand by controlVehicle()
 	double s = Math.sqrt( dx * dx + dy * dy );
 
-	if (Math.abs(dtheta) > 1e-3) { // The following model is not well defined when dtheta = 0
-	    // Circle center and radius
-	    double r = s/dtheta;
-
-	    double xc = x - r * Math.sin(theta);
-	    double yc = y + r * Math.cos(theta);
-
-	    theta = theta + dtheta * t;
-
-	    double rtheta = ((theta - Math.PI) % (2 * Math.PI));
-	    if (rtheta < 0) {	// Note that % in java is remainder, not modulo.
-		rtheta += 2*Math.PI;
-	    }
-	    theta = rtheta - Math.PI;
-
-	    // Update    
-	    x = xc + r * Math.sin(theta);
-	    y = yc - r * Math.cos(theta);
-	    dx = s * Math.cos(theta);
-	    dy = s * Math.sin(theta);
-
-	} else {			// Straight motion. No change in theta.
+ {			// Straight motion. No change in theta.
 	    x = x + dx * t;
 	    y = y + dy * t;
 	}
 
-	clampPosition();
-	clampVelocity();
+	//clampPosition();
+	//clampVelocity();
     }
 
-    // The following three methods (getVehicleLock, compareId,
-    // reverseCompareId) is is needed when you try resource-hierarchy
-    // solution for deadlock prevention
+    public double getInputSpeed(){
+    	return input_speed;
+    }
+    public synchronized boolean getHasBaton(){
+    	return hasBaton;
+    }
+    
+    public synchronized void setHasBaton(boolean hasBaton){
+    	this.hasBaton = hasBaton;
+    }
+    
+    public synchronized boolean getJustRan(){
+    	return justRan;
+    }
+    
+    public synchronized void setJustRan(boolean justRan){
+    	this.justRan = justRan;
+    }
+    
+    
+    public synchronized boolean getDoneRunning(){
+    	return doneRunning;
+    }
+    
+    public synchronized void setDoneRunning(boolean doneRunning){
+    	this.doneRunning = doneRunning;
+    }
+    
+    public boolean getWon(){
+    	return won;
+    }
+    
+    public void setWon(boolean w){
+    	won = w;
+    }
+    
+    public double getApproachTime(){
+    	return approachTime;
+    }
+    
+    public int getTeamID(){
+    	return teamID;
+    }
 
-    // public ReentrantLock getVehicleLock() {
-    // 	return this.mygvLock;
-    // }
-
-    // public int compareId(Runner gv) {
-    // 	if (getVehicleID() < gv.getVehicleID())
-    // 	    return -1;
-    // 	else if (getVehicleID() > getVehicleID())
-    // 	    return 1;
-    // 	else
-    // 	    return 0;
-    // }
-
-    // public int reverseCompareId(Runner gv) {
-    // 	return -compareId(gv);
-    // }    
+	public int getLegID() {
+		return legID;
+	}
+	
+	public synchronized boolean getJustPassed() {
+		return justPassed;
+	}
+    
+	public synchronized void setJustPassed(boolean b){
+		justPassed = b;
+	}
 }
