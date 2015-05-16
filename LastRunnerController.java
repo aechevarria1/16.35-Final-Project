@@ -39,10 +39,10 @@ public class LastRunnerController extends FirstRunnerController {
 
 	    	//if the previous runner is approaching with baton
 	    	else if (!current_runner.getHasBaton() && prev_runner.getJustRan()){
-	        	if (TID == 0 && Math.abs(y-py)>1e-2){
+	        	if (TID == 0 && Math.abs(y-55)>1e-2){
 	        		nextControl= new Control(2*prev_speed,Math.PI/4);
 	        	}
-	        	else if (TID == 1 && Math.abs(y-py)>1e-2)
+	        	else if (TID == 1 && Math.abs(y-55)>1e-2)
 	        		nextControl= new Control(1,-Math.PI/4);
 	        	//Runner slows down to make sure the previous one can catch
 	    		else if (Math.abs(y-55)<1e-2 && !current_runner.getHasBaton())

@@ -25,8 +25,10 @@ public class Runner extends Thread
     // for deadlock prevention
     // private ReentrantLock mygvLock;
 
-    public Runner (double pose[], double input_speed, boolean hasBaton, int start_x, boolean justRan, int teamID, int legID, double s,boolean justPassed, boolean doneRunning)//Added TeamID,legID back. Added input Speed,added boolean to tell if a vehicle was just passed
+    public Runner (double pose[], double input_speed, boolean hasBaton, int start_x, boolean justRan, int teamID, int legID, double s,boolean justPassed, boolean doneRunning) throws IllegalArgumentException//Added TeamID,legID back. Added input Speed,added boolean to tell if a vehicle was just passed
     {
+    	if (input_speed>1 || input_speed<0)
+    		throw new IllegalArgumentException("Input speed out of allowable range for a single runner");
     	this.start_x = start_x;
     	this.hasBaton = hasBaton;
     	this.justRan = justRan;
