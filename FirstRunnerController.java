@@ -5,7 +5,7 @@ public class FirstRunnerController extends Thread
 {
 
 	
-	private Simulator s;
+	protected Simulator s;
     protected Runner current_runner;
     protected Runner next_runner;
     
@@ -55,7 +55,7 @@ public class FirstRunnerController extends Thread
 	    }
 
 	    // Generate a new control
-	    Control nextControl = this.getControl(currentTime, currentMTime);
+	    Control nextControl = this.getControl();
 
 	    if (nextControl != null) {
 		current_runner.controlRunner(nextControl); 
@@ -77,10 +77,10 @@ public class FirstRunnerController extends Thread
 	}
     }
 
-    public synchronized Control getControl(int sec, int msec)
+    public synchronized Control getControl()
     {
 
-    	double controlTime = sec+msec*1E-3;
+
     	double x = current_runner.getPosition()[0];
     	double y = current_runner.getPosition()[1];
     	double nx = next_runner.getPosition()[0]; //The next vehicles position
@@ -137,6 +137,7 @@ public class FirstRunnerController extends Thread
 	    	//runner is passing baton
 	    	else if (dist_bw_runners < 3) {
 	    		current_runner.setHasBaton(false);
+	    		
 	    		nextControl = new Control(0,0);
 	    	}
     	}
