@@ -46,12 +46,12 @@ public class Simulator extends Thread
 
     public synchronized void addRunner(Runner gv){
 	RunnerList.add(gv);
-	System.out.printf("---------Adding Ground Vehicle-----------\n");
+	//System.out.printf("---------Adding Ground Vehicle-----------\n");
 	for(int i=0;i < RunnerList.size(); i++){
 	    Runner mgv = RunnerList.get(i);
 	    double position[] = mgv.getPosition();
-	    System.out.printf("%d : %f,%f,%f \n", mgv.getVehicleID(),
-			      position[0], position[1], position[2]);
+	  //  System.out.printf("%d : %f,%f,%f \n", mgv.getVehicleID(),
+			   //   position[0], position[1], position[2]);
 	}
 	numVehicleToUpdate++;
 	numControlToUpdate++;
@@ -75,7 +75,7 @@ public class Simulator extends Thread
 	double gvTheta[] = new double[RunnerList.size()];
 	displayClient.traceOn();
 
-	while (curentSec < 200000) {
+	while (curentSec < 100000) {
 	    
 	    int deltaSec = curentSec - _lastUpdateSec;
 	    int deltaMSec = curentMSec - _lastUpdateMSec;
@@ -96,6 +96,28 @@ public class Simulator extends Thread
 	    }
 	    displayClient.update(RunnerList.size(),gvX,gvY,gvTheta);
 
+	    //Check justPassed and check for winner
+	    synchronized(this){
+	    for (int i=0;i < RunnerList.size();i++){
+	    	Runner cr = RunnerList.get(i);
+	    	Runner nr = RunnerList.get(i);
+	    	for (int j=0;j<RunnerList.size();j++){
+	    		if (j!=i && RunnerList.get(j).getLegID()==cr.getLegID())
+	    			nr = RunnerList.get(j);
+	    		if(cr.getHasBaton() && nr.getHasBaton())  {
+	    			if (cr.getPosition()[0]>nr.getPosition()[0] && cr.getJustPassed() == false){
+	    				nr.setJustPassed(true);
+	    		}
+	    		}
+	    	}
+	    	if (cr.getWon()){
+	    		System.out.println("Team "+cr.getTeamID()+" wins!");
+	    		Thread.currentThread().interrupt();
+	    		return;
+	    	}
+	    }
+	    notifyAll();
+	    }
 	    // Advance the clock
 	    _lastUpdateSec = curentSec;
 	    _lastUpdateMSec = curentMSec;
@@ -145,7 +167,7 @@ public class Simulator extends Thread
 	displayClient.traceOff();
     }
 
-    public static void main (String [] args) throws InterruptedException
+    public static void main (String [] args) throws InterruptedException,IllegalArgumentException
     {
 	if (args.length == 0) {
 	    System.err.println("Usage: Java Simulator <noVehicles> <hostname>\n"+
@@ -153,14 +175,25 @@ public class Simulator extends Thread
 			       "      <hostname>   : DisplayServer host address");
 	    System.exit(-1);
 	}
-	
+	double runner11s = Double.parseDouble(args[1]);
+	double runner12s = Double.parseDouble(args[2]);
+	double runner13s = Double.parseDouble(args[3]);
+	double runner14s = Double.parseDouble(args[4]);
+	double runner21s = Double.parseDouble(args[5]);
+	double runner22s = Double.parseDouble(args[6]);
+	double runner23s = Double.parseDouble(args[7]);
+	double runner24s = Double.parseDouble(args[8]);
+	if (runner11s+runner12s+runner13s+runner14s > 2)
+		throw new IllegalArgumentException("Team 1 has inputted too much speed!");
+	if (runner21s+runner22s+runner23s+runner24s > 2)
+		throw new IllegalArgumentException("Team 2 has inputted too much speed!");
 	int numberofVehicles = 1;
 	String host = args[0];
 	// The args are going to specify each runner's speed. here is what args will be
 	//host,11,12,13,14,21,22,23,24
 	//(where 11 is the speed of runner11, for example)
 	//no commas
-
+	
 	DisplayClient dpClient = new DisplayClient(host);
 
 	Simulator sim = new Simulator(dpClient);
@@ -175,34 +208,34 @@ public class Simulator extends Thread
     
 
    	double[] initialPos11 = {runner1x,team1y, 0};
-	Runner runner11 = new Runner(initialPos11, Double.parseDouble(args[1]), true, runner1x, false,0,1,0,false, false, false);
+	Runner runner11 = new Runner(initialPos11, runner11s, true, runner1x, false,0,1,0,false, false);
 
 	double[] initialPos12 = {runner2x,team1y, 0};
-	Runner runner12 = new Runner(initialPos12, Double.parseDouble(args[2]), false, runner2x, false,0,2,0,false, false, false);
+	Runner runner12 = new Runner(initialPos12, runner12s, false, runner2x, false,0,2,0,false, false);
 
 	
 	double[] initialPos13 = {runner3x,team1y, 0};
-	Runner runner13 = new Runner(initialPos13, Double.parseDouble(args[3]), false, runner3x, false,0,3,0,false, false, false);
+	Runner runner13 = new Runner(initialPos13,runner13s, false, runner3x, false,0,3,0,false, false);
 
 	
 	double[] initialPos14 = {runner4x,team1y, 0};
-	Runner runner14 = new Runner(initialPos14, Double.parseDouble(args[4]), false, runner4x, false,0,4,0,false, false, false);
+	Runner runner14 = new Runner(initialPos14, runner14s, false, runner4x, false,0,4,0,false, false);
 
 	
 	double[] initialPos21 = {runner1x,team2y, 0};
-	Runner runner21 = new Runner(initialPos21, Double.parseDouble(args[5]), true, runner1x, false,1,1,0,false, false, false);
+	Runner runner21 = new Runner(initialPos21, runner21s, true, runner1x, false,1,1,0,false, false);
 	
 	
 	double[] initialPos22 = {runner2x,team2y, 0};
-	Runner runner22 = new Runner(initialPos22, Double.parseDouble(args[6]), false, runner2x, false,1,2,0,false, false, false);
+	Runner runner22 = new Runner(initialPos22, runner22s, false, runner2x, false,1,2,0,false, false);
 
 	
 	double[] initialPos23 = {runner3x,team2y, 0};
-	Runner runner23 = new Runner(initialPos23, Double.parseDouble(args[7]), false, runner3x, false,1,3,0,false, false, false);
+	Runner runner23 = new Runner(initialPos23, runner23s, false, runner3x, false,1,3,0,false, false);
 
 	
 	double[] initialPos24 = {runner4x,team2y, 0};
-	Runner runner24 = new Runner(initialPos24, Double.parseDouble(args[8]), false, runner4x, false,1,4,0,false, false, false);
+	Runner runner24 = new Runner(initialPos24, runner24s, false, runner4x, false,1,4,0,false, false);
 
 	
 	
@@ -257,7 +290,7 @@ public class Simulator extends Thread
     
     sim.start();  
 
-    
+	
 	
     }
 }

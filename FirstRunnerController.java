@@ -5,7 +5,7 @@ public class FirstRunnerController extends Thread
 {
 
 	
-	private Simulator s;
+	protected Simulator s;
     protected Runner current_runner;
     protected Runner next_runner;
     
@@ -137,6 +137,7 @@ public class FirstRunnerController extends Thread
 	    	//runner is passing baton
 	    	else if (dist_bw_runners < 3) {
 	    		current_runner.setHasBaton(false);
+	    		
 	    		nextControl = new Control(0,0);
 	    	}
     	}
